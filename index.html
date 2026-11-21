@@ -115,13 +115,15 @@ function setCur(t,items,sub){CUR={t,items};F.sub=sub||t;F.fm=bn(items.length)}
 function r(){
   const tabs=[['home','house','হোম'],['gen','sparkles','এআই'],['mist','repeat','দুর্বল প্রশ্ন'],['paper','file-text','প্রশ্নপত্র'],['badge','trophy','ব্যাজ']];
   $('nav').innerHTML=tabs.map(t=>`<button class="nv ${tab===t[0]?'on':''}" onclick="nav('${t[0]}')"><i data-lucide="${t[1]}" class="w-6 h-6"></i>${t[2]}${t[0]==='mist'&&S.mist.length?`<span class="absolute top-1 right-[22%] bg-rose-500 text-white rounded-full text-[10px] px-1.5">${bn(S.mist.length)}</span>`:''}</button>`).join('');
-  ({home:vHome,gen:vGen,mist:vMist,paper:vPaper,badge:vBadge,alya:vAlya}[tab]||(()=>{}))();
+  if(tab==='setup')$('nav').innerHTML='';
+  ({home:vHome,gen:vGen,mist:vMist,paper:vPaper,badge:vBadge,alya:vAlya,setup:vSetup}[tab]||(()=>{}))();
   bar();try{lucide.createIcons()}catch(e){}
   if(tab==='paper')pb();
 }
 
 function vHome(){
   $('app').innerHTML=`<div class="card bg-gradient-to-br from-indigo-600 to-emerald-500 text-white"><h1 class="text-xl font-bold">স্বাগতম! 👋</h1><p class="text-sm opacity-90 mt-1">প্রতিদিন অল্প অল্প করে পড়ুন, কুইজ দিন, স্ট্রিক বাড়ান।</p></div>
+  ${profCard()}
   <button class="btn g w-full mb-3" onclick="nav('alya')">🤖 আলিয়া এআই-এর সঙ্গে কথা বলুন</button>
   <div class="card"><div class="flex justify-between font-bold"><span>👑 লেভেল ${bn(lvl())} – ${lvName()}</span><span class="text-sm text-slate-500">${bn(S.xp%100)}/১০০ XP</span></div><div class="h-3 bg-slate-200 rounded-full mt-2"><div class="h-3 bg-amber-400 rounded-full" style="width:${S.xp%100}%"></div></div><div class="text-xs text-slate-500 mt-2">❤️ প্রতি কুইজে ৩টি জীবন • টানা সঠিক উত্তরে কম্বো বোনাস XP • 🤖 এআই গুরু ভুল বুঝিয়ে দেবেন</div></div>
   <h2 class="font-bold mb-2 text-slate-700">অধ্যায়ভিত্তিক কুইজ (প্রতি প্রশ্নে ৩০ সেকেন্ড)</h2>
@@ -186,6 +188,78 @@ function res(over){
   $('app').innerHTML=`<div class="card text-center"><div class="text-5xl mb-2">${over?'💔':'🏆'}</div><h2 class="text-xl font-bold">${over?'খেলা শেষ!':'কুইজ সম্পন্ন!'}</h2>
   <div class="text-4xl font-bold text-emerald-600 my-3">${bn(Z.sc)}/${bn(n)}</div><div class="text-slate-600">${bn(p)}% সঠিক • সেরা কম্বো ×${bn(Z.best)}${bonus?' • বোনাস +২০ XP':''}</div><p class="mt-3 font-semibold">${m}</p></div>
   <div class="grid gap-2">${!Z.rev?`<button class="btn" onclick="quiz(Z.title,Z.qs,false)">আবার খেলুন</button>`:''}${S.mist.length?`<button class="btn g" onclick="nav('mist')">দুর্বল প্রশ্ন রিভিশন (${bn(S.mist.length)}টি)</button>`:''}${CUR&&!Z.rev?`<button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান</button>`:''}<button class="btn d" onclick="nav('badge')">🏆 আমার ব্যাজ দেখুন</button><button class="btn d" onclick="nav('home')">হোমে ফিরুন</button></div>`;
+}
+/* ---------- Setup wizard + common questions ---------- */
+const DIST=['কলকাতা','উত্তর ২৪ পরগনা','দক্ষিণ ২৪ পরগনা','হাওড়া','হুগলি','নদিয়া','মুর্শিদাবাদ','বীরভূম','পূর্ব বর্ধমান','পশ্চিম বর্ধমান','বাঁকুড়া','পুরুলিয়া','পূর্ব মেদিনীপুর','পশ্চিম মেদিনীপুর','ঝাড়গ্রাম','মালদা','উত্তর দিনাজপুর','দক্ষিণ দিনাজপুর','জলপাইগুড়ি','আলিপুরদুয়ার','কোচবিহার','দার্জিলিং','কালিম্পং'];
+const STEPS=[
+{k:'cls',q:'তুমি কোন শ্রেণিতে পড়ো?',ch:['পঞ্চম','ষষ্ঠ','সপ্তম','অষ্টম','নবম','দশম','একাদশ','দ্বাদশ'],req:1},
+{k:'sub',q:'কোন বিষয়ের প্রশ্ন চাও?',ch:['বাংলা','ইংরেজি','গণিত','ভৌতবিজ্ঞান','জীবনবিজ্ঞান','ইতিহাস','ভূগোল'],tx:'অন্য বিষয় লিখুন',req:1},
+{k:'les',q:'কোন অধ্যায় বা পাঠ? অথবা পাঠের PDF দাও (না জানলে বাদ দিতে পারো)',tx:'যেমন: ফরাসি বিপ্লব',pdf:1},
+{k:'sch',q:'তোমার স্কুল বা কোচিং-এর নাম কী?',tx:'স্কুলের নাম'},
+{k:'state',q:'কোন রাজ্য?',ch:['পশ্চিমবঙ্গ','অসম','ত্রিপুরা','ঝাড়খণ্ড','বিহার','ওড়িশা'],tx:'অন্য রাজ্য লিখুন'},
+{k:'dist',q:'কোন জেলা?',tx:'জেলার নাম লিখুন বা বাছুন',dl:1}];
+let W={i:0,d:{}},PDFB=null;
+function pickW(v){W.d[STEPS[W.i].k]=v;vSetup()}
+function pf(t){const e=$('pf');if(e)e.innerHTML=t}
+function onPdf(inp){
+  const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+  if(f.type!=='application/pdf')return pf('❌ শুধু PDF ফাইল দিন।');
+  if(f.size>2*1024*1024)return pf('❌ PDF ২ MB-এর বেশি। কয়েকটি পাতা আলাদা করে ছোট PDF দিন।');
+  const r=new FileReader();
+  r.onload=()=>{PDFB={name:f.name,b64:String(r.result).split(',')[1]};vSetup()};
+  r.onerror=()=>pf('❌ ফাইল পড়া যায়নি।');r.readAsDataURL(f);
+}
+function vSetup(){
+  const st=STEPS[W.i],v=W.d[st.k]||'',last=W.i===STEPS.length-1;
+  $('app').innerHTML=`<div class="card"><div class="text-xs text-emerald-700 font-semibold">ধাপ ${bn(W.i+1)}/${bn(STEPS.length)}</div>
+  <div class="h-2 bg-slate-200 rounded-full my-2"><div class="h-2 bg-emerald-500 rounded-full" style="width:${(W.i+1)/STEPS.length*100}%"></div></div>
+  <h2 class="text-lg font-bold mb-3">${st.q}</h2>
+  ${st.ch?`<div class="grid grid-cols-2 gap-2 mb-3">${st.ch.map(c=>`<button class="btn ${v===c?'':'l'}" onclick="pickW('${c}')">${c}</button>`).join('')}</div>`:''}
+  ${st.tx?`<input class="inp" ${st.dl?'list="dl"':''} placeholder="${st.tx}" value="${esc(st.ch&&st.ch.includes(v)?'':v)}" oninput="W.d['${st.k}']=this.value">`:''}
+  ${st.dl?`<datalist id="dl">${DIST.map(d=>`<option value="${d}">`).join('')}</datalist>`:''}
+  ${st.pdf?`<label class="btn l w-full mt-3 cursor-pointer">📄 পাঠের PDF দিন (২ MB পর্যন্ত)<input type="file" accept="application/pdf" class="hidden" onchange="onPdf(this)"></label><div id="pf" class="text-sm mt-2">${PDFB?'✅ '+esc(PDFB.name)+' <button class="underline text-rose-700" onclick="PDFB=null;vSetup()">সরান</button>':''}</div>`:''}
+  </div><div class="grid grid-cols-2 gap-2">${W.i>0?'<button class="btn d" onclick="W.i--;vSetup()">← পিছনে</button>':'<span></span>'}<button class="btn g" onclick="nextW()">${last?'✅ শেষ করুন':'পরের ধাপ →'}</button></div>`;
+}
+function nextW(){
+  const st=STEPS[W.i];
+  if(st.req&&!(W.d[st.k]||'').trim())return toast('একটি বেছে নাও');
+  if(W.i<STEPS.length-1){W.i++;return vSetup()}
+  const d=W.d,t=k=>(d[k]||'').trim();
+  S.prof={cls:t('cls'),sub:t('sub'),les:t('les'),sch:t('sch'),state:t('state')||'পশ্চিমবঙ্গ',dist:t('dist')};
+  F.sch=S.prof.sch||F.sch;F.cls=S.prof.cls+' শ্রেণি';F.sub=S.prof.sub;save();nav('home');
+}
+function editProf(){W={i:0,d:{...S.prof}};nav('setup')}
+function profCard(){
+  const P=S.prof;if(!P)return '';
+  return `<div class="card border-2 border-emerald-200"><div class="flex justify-between items-start gap-2"><div><div class="text-xs text-emerald-700 font-semibold">আমার পছন্দ</div><div class="font-bold">${esc(P.cls)} শ্রেণি • ${esc(P.sub)}${P.les?' • '+esc(P.les):''}</div><div class="text-xs text-slate-500">${[P.sch,P.dist,P.state].filter(Boolean).map(esc).join(' • ')}</div></div><button class="text-sm text-indigo-700 font-semibold whitespace-nowrap" onclick="editProf()">✏️ বদলান</button></div>
+  <div class="grid gap-2 mt-3"><button class="btn" onclick="genCommon('mcq')">⚡ সম্ভাব্য কমন প্রশ্ন (MCQ)</button><button class="btn l" onclick="genCommon('sq')">⚡ সম্ভাব্য কমন ছোট প্রশ্ন</button></div>
+  <div id="hm" class="text-sm mt-2">${PDFB?'📄 '+esc(PDFB.name)+' থেকে প্রশ্ন হবে':'<span class="text-slate-500">এআই-এর বানানো প্রশ্ন, শিক্ষককে দিয়ে মিলিয়ে নেবেন।</span>'}</div></div>`;
+}
+async function genCommon(ty){
+  if(busy)return;const P=S.prof;busy=true;
+  const hm=t=>{const e=$('hm');if(e)e.innerHTML=t};
+  hm('<span class="text-indigo-700 font-semibold">⏳ সম্ভাব্য কমন প্রশ্ন তৈরি হচ্ছে, একটু অপেক্ষা করুন...</span>');
+  const sys='You are an experienced exam-paper setter for the school board of the given state (default: West Bengal Board, WBBSE). Create questions that are most likely to appear commonly in school and board exams for the given class, subject and lesson, based on the standard textbook syllabus and typical exam patterns. If a PDF is attached, create questions STRICTLY from the PDF content only. Use only well-established textbook facts; if you are unsure about a fact, skip it. Never claim a question comes from any specific school or past paper. Write in Bengali. Output ONLY valid JSON with no markdown fences.';
+  const fmt=ty==='mcq'?'{"questions":[{"q":"প্রশ্ন","o":["অ","আ","ই","ঈ"],"a":0,"e":"সংক্ষিপ্ত ব্যাখ্যা"}]} — exactly 4 options, "a" is the 0-based index of the correct option':'{"questions":[{"q":"প্রশ্ন","ans":"সংক্ষিপ্ত উত্তর"}]} — each answer is one short sentence worth 1 mark';
+  const ctx=`State: ${P.state}; Class: ${P.cls}; Subject: ${P.sub}; Lesson: ${P.les||'(not given – choose the most important topics of this subject and class)'}; District: ${P.dist||'-'}`;
+  const parts=[{text:`Create exactly 10 ${ty==='mcq'?'multiple-choice questions':'one-mark short-answer questions'} most likely to appear commonly in exams.\nContext: ${ctx}\nJSON format: ${fmt}${PDFB?'\nUse ONLY the attached PDF as the source.':''}`}];
+  if(PDFB)parts.push({inlineData:{mimeType:'application/pdf',data:PDFB.b64}});
+  try{
+    const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json',temperature:0.3}});
+    if(!res.ok){let m='';try{m=((await res.json()).error||{}).message||''}catch(_){}
+      throw new Error(/API key/i.test(m)||res.status===401||res.status===403?'key':res.status===404||res.status===405?'noproxy':res.status===429?'quota':'http')}
+    const d=await res.json();
+    let a=JSON.parse((d.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('').replace(/```json|```/g,'').trim());
+    if(a&&a.error)throw new Error('unreadable');
+    a=Array.isArray(a)?a:a.questions;
+    const items=(a||[]).filter(x=>x&&x.q&&(ty==='mcq'?Array.isArray(x.o)&&x.o.length>=2&&Number.isInteger(x.a)&&x.o[x.a]!==undefined:x.ans)).slice(0,10);
+    if(!items.length)throw new Error('empty');
+    G={t:'কমন প্রশ্ন: '+P.sub+(P.les?' – '+P.les:''),items};setCur(G.t,items,P.sub);busy=false;nav('gen');
+  }catch(e){
+    busy=false;
+    const E={key:'❌ API Key সঠিক নয় বা অনুমতি নেই।',quota:'❌ বিনামূল্যের সীমা শেষ। কিছুক্ষণ পরে আবার চেষ্টা করুন।',noproxy:'❌ সার্ভারের এআই চালু নেই। “এআই” ট্যাবে নিজের Gemini API Key দিন।',unreadable:'❌ PDF পড়া যায়নি। পরিষ্কার লেখাওয়ালা অন্য PDF দিন।',empty:'❌ এআই সঠিক ফরম্যাটে উত্তর দেয়নি। আবার চেষ্টা করুন।'};
+    hm('<span class="text-rose-700 font-semibold">'+(E[e.message]||(e.name==='SyntaxError'?E.empty:'❌ সংযোগ বা সার্ভারে সমস্যা হয়েছে। ইন্টারনেট দেখে আবার চেষ্টা করুন।'))+'</span>');
+  }
 }
 function vAlya(){
   $('app').innerHTML=`<div class="flex gap-2 mb-2"><button class="btn d" onclick="nav('home')">← হোম</button><a class="btn l flex-1" href="${ALYA}" target="_blank" rel="noopener">নতুন ট্যাবে খুলুন ↗</a></div>
@@ -314,6 +388,7 @@ function pb(){
   ${x.o?`<div class="grid grid-cols-2 gap-x-4 pl-5 text-sm">${x.o.map((o,j)=>`<div class="${F.ans&&j===x.a?'font-bold underline':''}">(${L[j]||j+1}) ${esc(o)}</div>`).join('')}</div>${F.ans?`<div class="pl-5 text-sm font-semibold">উত্তর: (${L[x.a]}) ${esc(x.o[x.a])}</div>`:''}`:(F.ans?`<div class="pl-5 text-sm font-semibold">উত্তর: ${esc(x.ans)}</div>`:'<div class="h-6 border-b border-dotted border-slate-400 ml-5"></div>')}</div>`).join('')}`;
 }
 
+if(S.prof){F.sch=S.prof.sch||F.sch;F.cls=S.prof.cls+' শ্রেণি';F.sub=S.prof.sub}else tab='setup';
 r();
 </script>
 </body>
