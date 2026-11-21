@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>পড়ুয়া সাথী – WBBSE স্টাডি ও কুইজ</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+body{font-family:'Hind Siliguri',system-ui,sans-serif;background:#f1f5f9;color:#0f172a}
+.card{background:#fff;border-radius:1rem;padding:1rem;box-shadow:0 1px 3px #0001;margin-bottom:.9rem}
+.btn{background:#4f46e5;color:#fff;font-weight:600;border-radius:.8rem;padding:.8rem 1rem;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
+.btn:active{transform:scale(.97)}
+.btn.g{background:#059669}.btn.l{background:#e0e7ff;color:#3730a3}.btn.d{background:#e2e8f0;color:#334155}
+.opt{display:block;width:100%;text-align:left;padding:.85rem 1rem;margin-bottom:.6rem;border:2px solid #e2e8f0;border-radius:.8rem;background:#fff;min-height:52px;font-size:1rem}
+.opt.ok{background:#d1fae5;border-color:#10b981;color:#065f46}.opt.bad{background:#ffe4e6;border-color:#f43f5e;color:#9f1239}
+.inp{width:100%;border:2px solid #e2e8f0;border-radius:.7rem;padding:.65rem .8rem;background:#fff}
+.nv{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:.5rem 0;font-size:.72rem;color:#64748b;position:relative}
+.nv.on{color:#4f46e5;font-weight:700}
+#paper{background:#fff;padding:1.5rem;border:1px solid #cbd5e1;border-radius:.5rem;line-height:1.75}
+@media print{body{background:#fff}.noprint{display:none!important}#paper{border:0;padding:0}main{padding:0!important;max-width:none!important}}
+</style>
+</head>
+<body class="pb-24">
+<header class="noprint sticky top-0 z-10 bg-white shadow-sm">
+  <div class="max-w-xl mx-auto flex items-center justify-between px-4 py-2">
+    <div class="font-bold text-indigo-700 text-lg">📘 পড়ুয়া সাথী</div>
+    <div class="flex gap-1.5 text-xs font-semibold">
+      <span id="lv" class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700"></span>
+      <span class="px-2 py-1 rounded-full bg-orange-100 text-orange-700">🔥 <span id="st">০</span> দিন</span>
+      <span class="px-2 py-1 rounded-full bg-amber-100 text-amber-700">⭐ <span id="xp">০</span></span>
+    </div>
+  </div>
+</header>
+<main id="app" class="max-w-xl mx-auto p-4"></main>
+<nav class="noprint fixed bottom-0 inset-x-0 bg-white border-t flex max-w-xl mx-auto" id="nav"></nav>
+
+<script>
+/* ---------- Safe storage ---------- */
+const mem={};
+const st={get(k){try{const v=localStorage.getItem(k);return v===null?(mem[k]??null):v}catch(e){return mem[k]??null}},
+set(k,v){mem[k]=v;try{localStorage.setItem(k,v)}catch(e){}}};
+let S={};
+try{S=JSON.parse(st.get('wb_state')||'null')||{}}catch(e){S={}}
+S=Object.assign({xp:0,streak:0,last:'',mist:[],key:'',corr:0,qz:0,perf:0,bc:0,cleared:0,badges:[]},S);
+const save=()=>st.set('wb_state',JSON.stringify(S));
+const $=id=>document.getElementById(id);
+const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dkey=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+const L='কখগঘ';
+const PROXY='/api/gemini'; // GitHub Pages-এ দিলে এখানে পুরো Vercel লিংক বসান, যেমন https://আপনার-অ্যাপ.vercel.app/api/gemini
+const GURL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+function callG(body){
+  return S.key?fetch(GURL,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':S.key},body:JSON.stringify(body)})
+              :fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+
+/* ---------- Data ---------- */
+const Q=(q,o,a,e)=>({q,o,a,e});
+const CH=[
+{id:'h',sub:'ইতিহাস',t:'ফরাসি বিপ্লব',cls:'নবম শ্রেণি',ic:'landmark',qs:[
+Q('ফরাসি বিপ্লব কোন সালে শুরু হয়?',['১৭৭৬','১৭৮৯','১৭৯৯','১৮১৫'],1,'১৭৮৯ খ্রিস্টাব্দের ১৪ জুলাই বাস্তিল দুর্গের পতনের মধ্য দিয়ে ফরাসি বিপ্লব শুরু হয়।'),
+Q('বিপ্লবের সময় ফ্রান্সের রাজা কে ছিলেন?',['চতুর্দশ লুই','পঞ্চদশ লুই','ষোড়শ লুই','প্রথম নেপোলিয়ন'],2,'বিপ্লবের সময় ফ্রান্সের সিংহাসনে ছিলেন বুর্বঁ বংশের রাজা ষোড়শ লুই।'),
+Q('ফরাসি বিপ্লবের মূল স্লোগান কী ছিল?',['রুটি ও শান্তি','জয় ও গৌরব','স্বাধীনতা, সাম্য ও মৈত্রী','কর্তব্য ও ন্যায়'],2,'স্বাধীনতা, সাম্য ও মৈত্রী – এই তিনটি আদর্শ ফরাসি বিপ্লবের মূল মন্ত্র ছিল।'),
+Q('‘দ্য স্পিরিট অব ল’ গ্রন্থের লেখক কে?',['রুশো','ভলতেয়ার','মন্তেস্কু','দিদেরো'],2,'মন্তেস্কু এই গ্রন্থে ক্ষমতা স্বতন্ত্রীকরণের নীতি ব্যাখ্যা করেছেন।'),
+Q('‘সোশ্যাল কন্ট্রাক্ট’ গ্রন্থের রচয়িতা কে?',['ভলতেয়ার','রুশো','মন্তেস্কু','টার্গো'],1,'জাঁ জাক রুশো তাঁর এই গ্রন্থে জনগণের সার্বভৌমত্বের কথা বলেছেন।'),
+Q('বিপ্লবের আগে ফ্রান্সের পুরোনো সমাজ ও শাসনব্যবস্থা কী নামে পরিচিত?',['আঁসিয়াঁ রেজিম','ডিরেক্টরি','কনসুলেট','জ্যাকোবিন শাসন'],0,'বিপ্লবপূর্ব ফ্রান্সের সামন্ততান্ত্রিক ও স্বৈরতান্ত্রিক ব্যবস্থাকে আঁসিয়াঁ রেজিম বলা হয়।'),
+Q('ষোড়শ লুইয়ের স্ত্রীর নাম কী?',['জোসেফিন','মারি অঁতোয়ানেৎ','ক্যাথরিন','এলিজাবেথ'],1,'অস্ট্রিয়ার রাজকন্যা মারি অঁতোয়ানেৎ ছিলেন ষোড়শ লুইয়ের স্ত্রী।'),
+Q('বিপ্লবের আগে করের বোঝা সবচেয়ে বেশি কারা বহন করত?',['যাজক সম্প্রদায়','অভিজাত সম্প্রদায়','তৃতীয় এস্টেট (সাধারণ জনগণ)','রাজপরিবার'],2,'প্রথম ও দ্বিতীয় এস্টেট কর থেকে অব্যাহতি পেত; সাধারণ মানুষ নিয়ে গঠিত তৃতীয় এস্টেটই কর দিত।')]},
+{id:'b',sub:'জীবন বিজ্ঞান',t:'কোষ ও কলা',cls:'নবম শ্রেণি',ic:'microscope',qs:[
+Q('কোষ কে আবিষ্কার করেন?',['রবার্ট হুক','শ্লাইডেন','ভির্শো','লিউয়েনহুক'],0,'১৬৬৫ সালে রবার্ট হুক কর্কের পাতলা ছেদ পর্যবেক্ষণ করে কোষ আবিষ্কার করেন।'),
+Q('কোষের শক্তিঘর কোনটি?',['রাইবোজোম','মাইটোকন্ড্রিয়া','গলগি বস্তু','লাইসোজোম'],1,'মাইটোকন্ড্রিয়ায় শ্বসনের মাধ্যমে ATP উৎপন্ন হয়, তাই একে শক্তিঘর বলে।'),
+Q('উদ্ভিদকোষের কোষপ্রাচীর মূলত কোন পদার্থ দিয়ে তৈরি?',['কাইটিন','সেলুলোজ','কেরাটিন','গ্লাইকোজেন'],1,'উদ্ভিদকোষের প্রাচীর প্রধানত সেলুলোজ দিয়ে গঠিত।'),
+Q('কোষে প্রোটিন সংশ্লেষ ঘটে কোথায়?',['লাইসোজোম','রাইবোজোম','সেন্ট্রিওল','ভ্যাকুওল'],1,'রাইবোজোমকে প্রোটিন তৈরির কারখানা বলা হয়।'),
+Q('কোষের ‘আত্মঘাতী থলি’ কাকে বলে?',['গলগি বস্তু','মাইটোকন্ড্রিয়া','লাইসোজোম','নিউক্লিয়াস'],2,'লাইসোজোমের পাচক উৎসেচক কোষকে নষ্ট করতে পারে, তাই একে আত্মঘাতী থলি বলে।'),
+Q('সালোকসংশ্লেষ ঘটে কোন অঙ্গাণুতে?',['ক্লোরোপ্লাস্ট','মাইটোকন্ড্রিয়া','নিউক্লিয়াস','গলগি বস্তু'],0,'ক্লোরোপ্লাস্টের ক্লোরোফিল সূর্যালোক শোষণ করে খাদ্য তৈরিতে সাহায্য করে।'),
+Q('রক্ত কোন ধরনের কলা?',['আবরণী কলা','যোজক কলা','পেশি কলা','স্নায়ু কলা'],1,'রক্ত একটি তরল যোজক কলা।'),
+Q('কোষের নিয়ন্ত্রণকেন্দ্র কোনটি?',['নিউক্লিয়াস','প্লাস্টিড','কোষপ্রাচীর','ভ্যাকুওল'],0,'নিউক্লিয়াস কোষের সমস্ত কাজ নিয়ন্ত্রণ করে এবং এতে বংশগতির বাহক DNA থাকে।')]}
+];
+const DEMO_TEXT='কোষ জীবদেহের গঠন ও কার্যের একক। রবার্ট হুক ১৬৬৫ সালে কোষ আবিষ্কার করেন। মাইটোকন্ড্রিয়া কোষের শক্তিঘর। রাইবোজোমে প্রোটিন সংশ্লেষ হয়। ক্লোরোপ্লাস্টে সালোকসংশ্লেষ ঘটে।';
+const DEMO_SH=[['কোষ কাকে বলে?','জীবদেহের গঠন ও কার্যের একককে কোষ বলে।'],['কোষের শক্তিঘর কাকে বলে?','মাইটোকন্ড্রিয়াকে কোষের শক্তিঘর বলে।'],['ক্লোরোপ্লাস্টের কাজ কী?','ক্লোরোপ্লাস্ট সালোকসংশ্লেষে সাহায্য করে।'],['কলা কাকে বলে?','একই উৎপত্তি, গঠন ও কাজবিশিষ্ট কোষের সমষ্টিকে কলা বলে।'],['রাইবোজোমের কাজ কী?','রাইবোজোম প্রোটিন সংশ্লেষ করে।']].map(x=>({q:x[0],ans:x[1]}));
+
+/* ---------- State ---------- */
+let tab='home',Z={iv:0},CUR=null,G=null,busy=false,IMG=null;
+let F={sch:'আপনার স্কুল / কোচিং-এর নাম',cls:'নবম শ্রেণি',sub:'',fm:'',tm:'১ ঘণ্টা',ans:false};
+
+/* ---------- Game: level, badges, toast ---------- */
+const LV=['নবিশ','শিক্ষার্থী','পড়ুয়া','মেধাবী','পণ্ডিত','বিদ্বান','জ্ঞানী','মহাজ্ঞানী'];
+const lvl=()=>Math.floor(S.xp/100)+1;
+const lvName=()=>LV[Math.min(lvl()-1,LV.length-1)];
+const BD=[
+['first','🌱','প্রথম পদক্ষেপ','প্রথম কুইজ শেষ করুন',()=>S.qz>=1],
+['c5','🔥','কম্বো মাস্টার','টানা ৫টি সঠিক উত্তর দিন',()=>S.bc>=5],
+['perf','💯','নিখুঁত স্কোর','একটিও ভুল ছাড়া কুইজ শেষ করুন',()=>S.perf>=1],
+['a50','🎯','৫০ সঠিক','মোট ৫০টি সঠিক উত্তর দিন',()=>S.corr>=50],
+['s3','📅','৩ দিনের স্ট্রিক','টানা ৩ দিন পড়ুন',()=>S.streak>=3],
+['fix','🛠️','ভুল সংশোধক','১০টি দুর্বল প্রশ্ন ঠিক করুন',()=>S.cleared>=10],
+['l5','👑','লেভেল ৫','লেভেল ৫-এ পৌঁছান',()=>lvl()>=5]];
+function toast(m){const n=document.querySelectorAll('.tt').length,d=document.createElement('div');
+  d.className='tt noprint fixed left-1/2 z-50 bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg';
+  d.style.cssText='transform:translateX(-50%);top:'+(64+n*46)+'px';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
+function addXP(n){const o=lvl();S.xp+=n;if(lvl()>o)toast('🎉 লেভেল '+bn(lvl())+' – '+lvName()+'!')}
+function chk(){BD.forEach(b=>{if(!S.badges.includes(b[0])&&b[4]()){S.badges.push(b[0]);toast(b[1]+' নতুন ব্যাজ: '+b[2])}})}
+function bar(){$('xp').textContent=bn(S.xp);$('st').textContent=bn(S.streak);$('lv').textContent='Lv '+bn(lvl())}
+function touch(){const t=dkey(new Date());if(S.last===t)return;
+  S.streak=S.last===dkey(new Date(Date.now()-864e5))?S.streak+1:1;S.last=t}
+function addM(q){if(!S.mist.some(m=>m.q===q.q))S.mist.push({q:q.q,o:q.o,a:q.a,e:q.e})}
+function nav(t){clearInterval(Z.iv);tab=t;r()}
+function setCur(t,items,sub){CUR={t,items};F.sub=sub||t;F.fm=bn(items.length)}
+
+/* ---------- Render ---------- */
+function r(){
+  const tabs=[['home','house','হোম'],['gen','sparkles','এআই'],['mist','repeat','দুর্বল প্রশ্ন'],['paper','file-text','প্রশ্নপত্র'],['badge','trophy','ব্যাজ']];
+  $('nav').innerHTML=tabs.map(t=>`<button class="nv ${tab===t[0]?'on':''}" onclick="nav('${t[0]}')"><i data-lucide="${t[1]}" class="w-6 h-6"></i>${t[2]}${t[0]==='mist'&&S.mist.length?`<span class="absolute top-1 right-[22%] bg-rose-500 text-white rounded-full text-[10px] px-1.5">${bn(S.mist.length)}</span>`:''}</button>`).join('');
+  ({home:vHome,gen:vGen,mist:vMist,paper:vPaper,badge:vBadge}[tab]||(()=>{}))();
+  bar();try{lucide.createIcons()}catch(e){}
+  if(tab==='paper')pb();
+}
+
+function vHome(){
+  $('app').innerHTML=`<div class="card bg-gradient-to-br from-indigo-600 to-emerald-500 text-white"><h1 class="text-xl font-bold">স্বাগতম! 👋</h1><p class="text-sm opacity-90 mt-1">প্রতিদিন অল্প অল্প করে পড়ুন, কুইজ দিন, স্ট্রিক বাড়ান।</p></div>
+  <div class="card"><div class="flex justify-between font-bold"><span>👑 লেভেল ${bn(lvl())} – ${lvName()}</span><span class="text-sm text-slate-500">${bn(S.xp%100)}/১০০ XP</span></div><div class="h-3 bg-slate-200 rounded-full mt-2"><div class="h-3 bg-amber-400 rounded-full" style="width:${S.xp%100}%"></div></div><div class="text-xs text-slate-500 mt-2">❤️ প্রতি কুইজে ৩টি জীবন • টানা সঠিক উত্তরে কম্বো বোনাস XP • 🤖 এআই গুরু ভুল বুঝিয়ে দেবেন</div></div>
+  <h2 class="font-bold mb-2 text-slate-700">অধ্যায়ভিত্তিক কুইজ (প্রতি প্রশ্নে ৩০ সেকেন্ড)</h2>
+  ${CH.map((c,i)=>`<div class="card"><div class="flex items-center gap-3"><div class="p-3 rounded-xl bg-indigo-100 text-indigo-700"><i data-lucide="${c.ic}" class="w-7 h-7"></i></div><div><div class="text-xs text-emerald-700 font-semibold">${c.sub} • ${c.cls}</div><div class="font-bold text-lg">${c.t}</div><div class="text-sm text-slate-500">${bn(c.qs.length)}টি MCQ</div></div></div>
+  <div class="grid grid-cols-2 gap-2 mt-3"><button class="btn" onclick="goQuiz(${i})">কুইজ শুরু করুন</button><button class="btn l" onclick="goPaper(${i})">প্রশ্নপত্র</button></div></div>`).join('')}
+  <div class="card text-sm text-slate-600">💡 নিজের নোট থেকে প্রশ্ন বানাতে <b>এআই জেনারেটর</b> ট্যাবে যান।</div>`;
+}
+function goQuiz(i){const c=CH[i];setCur(c.sub+': '+c.t,c.qs,c.sub);quiz(c.sub+': '+c.t,c.qs,false)}
+function goPaper(i){const c=CH[i];setCur(c.sub+': '+c.t,c.qs,c.sub);nav('paper')}
+
+/* ---------- Quiz ---------- */
+function quiz(title,qs,rev){clearInterval(Z.iv);Z={title,qs:[...qs],i:0,sc:0,sel:null,rev,t:30,iv:0,lives:rev?0:3,combo:0,best:0};tab='quiz';r();$('nav').querySelectorAll('.nv').forEach(b=>b.classList.remove('on'));rq()}
+function rq(){
+  const q=Z.qs[Z.i];Z.sel=null;Z.t=30;
+  $('app').innerHTML=`<div class="card"><div class="text-xs text-emerald-700 font-semibold mb-2">${esc(Z.title)}</div>
+  <div class="flex justify-between items-center text-sm font-semibold text-slate-600"><span>প্রশ্ন ${bn(Z.i+1)}/${bn(Z.qs.length)} <span id="hr">${Z.rev?'':hearts()}</span></span><span id="tm" class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700"></span></div>
+  <div class="h-2 bg-slate-200 rounded-full my-3"><div class="h-2 bg-emerald-500 rounded-full" style="width:${Z.i/Z.qs.length*100}%"></div></div>
+  <h2 class="text-lg font-bold mb-4">${esc(q.q)}</h2>
+  ${q.o.map((o,j)=>`<button class="opt" id="o${j}" onclick="pick(${j})"><b>${L[j]}.</b> ${esc(o)}</button>`).join('')}<div id="ex"></div></div>
+  <button class="btn d w-full" onclick="nav('home')">← কুইজ ছেড়ে বেরিয়ে যান</button>`;
+  tick();clearInterval(Z.iv);Z.iv=setInterval(()=>{Z.t--;tick();if(Z.t<=0)pick(-1)},1000);
+}
+function tick(){const e=$('tm');if(!e)return;e.textContent='⏱ '+bn(Z.t)+' সেকেন্ড';e.className='px-3 py-1 rounded-full '+(Z.t<=10?'bg-rose-100 text-rose-700':'bg-indigo-100 text-indigo-700')}
+function hearts(){return '❤️'.repeat(Z.lives)+'🖤'.repeat(3-Z.lives)}
+function pick(j){
+  if(Z.sel!==null)return;clearInterval(Z.iv);Z.sel=j;
+  const q=Z.qs[Z.i],ok=j===q.a;touch();let gain=0;
+  if(ok){Z.sc++;Z.combo++;Z.best=Math.max(Z.best,Z.combo);S.corr++;gain=10+Math.min(Z.combo-1,5)*2;
+    if(Z.rev){S.mist=S.mist.filter(m=>m.q!==q.q);S.cleared++;gain+=5}
+    addXP(gain)}
+  else{Z.combo=0;if(!Z.rev)Z.lives--;addM(q)}
+  S.bc=Math.max(S.bc||0,Z.best);chk();save();bar();
+  const h=$('hr');if(h&&!Z.rev)h.textContent=hearts();
+  q.o.forEach((_,k)=>{const b=$('o'+k);b.disabled=true;if(k===q.a)b.classList.add('ok');else if(k===j)b.classList.add('bad')});
+  const dead=!Z.rev&&Z.lives<=0;
+  $('ex').innerHTML=`<div class="mt-4 p-3 rounded-xl ${ok?'bg-emerald-50 text-emerald-800':'bg-rose-50 text-rose-800'}"><b>${j<0?'⏰ সময় শেষ! সঠিক: '+L[q.a]:ok?'✅ সঠিক! +'+bn(gain)+' XP'+(Z.combo>1?' • 🔥 কম্বো ×'+bn(Z.combo):''):'❌ ভুল উত্তর – সঠিক: '+L[q.a]}</b><p class="mt-1 text-slate-700">${esc(q.e||'')}</p></div>
+  <button id="tb" class="btn l w-full mt-3" onclick="tutor()">🤖 এআই গুরুকে জিজ্ঞেস করুন</button><div id="ta"></div>
+  <button class="btn w-full mt-3" onclick="nx()">${dead?'খেলা শেষ 💔':Z.i+1<Z.qs.length?'পরের প্রশ্ন →':'ফলাফল দেখুন'}</button>`;
+}
+function nx(){if(!Z.rev&&Z.lives<=0)return res(true);Z.i++;Z.i>=Z.qs.length?res():rq()}
+async function ask(p){
+  const sys='তুমি “এআই গুরু”, WBBSE ছাত্রছাত্রীদের বন্ধুসুলভ শিক্ষক। শুধু দেওয়া প্রশ্নটি নিয়েই সহজ বাংলায়, সর্বোচ্চ ৪টি ছোট বাক্যে উত্তর দাও। বাইরের তথ্য বানিও না। একটি মনে রাখার সহজ কৌশল দাও।';
+  const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts:[{text:p}]}],generationConfig:{temperature:0.4}});
+  if(!res.ok)throw new Error('http');
+  const d=await res.json();return (d.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('').trim()||'';
+}
+async function tutor(){
+  const q=Z.qs[Z.i],b=$('tb'),o=$('ta');
+  b.disabled=true;b.textContent='⏳ এআই গুরু ভাবছেন...';
+  try{
+    const r=await ask(`প্রশ্ন: ${q.q}\nবিকল্প: ${q.o.map((x,i)=>L[i]+') '+x).join(' | ')}\nসঠিক উত্তর: ${L[q.a]}) ${q.o[q.a]}\nছাত্র বেছেছে: ${Z.sel<0?'কিছুই না (সময় শেষ)':L[Z.sel]+') '+q.o[Z.sel]}\nকেন সঠিক উত্তরটি ঠিক তা সহজ বাংলায় বুঝিয়ে দাও।`);
+    if(!r)throw new Error('empty');
+    o.innerHTML=`<div class="mt-2 p-3 rounded-xl bg-indigo-50 text-indigo-900 text-sm">🤖 <b>এআই গুরু:</b> ${esc(r)}</div>`;b.remove();
+  }catch(e){b.disabled=false;b.textContent='🤖 আবার চেষ্টা করুন';o.innerHTML='<div class="text-sm text-rose-700 mt-2">❌ এআই গুরুকে পাওয়া যায়নি। API Key ও ইন্টারনেট দেখে আবার চেষ্টা করুন।</div>'}
+}
+function res(over){
+  let bonus=0;
+  if(!over){S.qz++;bonus=20;addXP(20);if(Z.sc===Z.qs.length)S.perf++}
+  touch();chk();save();bar();
+  const n=Z.qs.length,p=Math.round(Z.sc/n*100);
+  const m=over?'তিনটি জীবনই শেষ! ভুলগুলো রিভিশন করে আবার চেষ্টা করুন।':p>=80?'🎉 চমৎকার! চালিয়ে যান।':p>=50?'👍 ভালো হয়েছে, আরেকটু অনুশীলন করুন।':'💪 হাল ছাড়বেন না, ভুল প্রশ্নগুলো রিভিশন করুন।';
+  $('app').innerHTML=`<div class="card text-center"><div class="text-5xl mb-2">${over?'💔':'🏆'}</div><h2 class="text-xl font-bold">${over?'খেলা শেষ!':'কুইজ সম্পন্ন!'}</h2>
+  <div class="text-4xl font-bold text-emerald-600 my-3">${bn(Z.sc)}/${bn(n)}</div><div class="text-slate-600">${bn(p)}% সঠিক • সেরা কম্বো ×${bn(Z.best)}${bonus?' • বোনাস +২০ XP':''}</div><p class="mt-3 font-semibold">${m}</p></div>
+  <div class="grid gap-2">${!Z.rev?`<button class="btn" onclick="quiz(Z.title,Z.qs,false)">আবার খেলুন</button>`:''}${S.mist.length?`<button class="btn g" onclick="nav('mist')">দুর্বল প্রশ্ন রিভিশন (${bn(S.mist.length)}টি)</button>`:''}${CUR&&!Z.rev?`<button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান</button>`:''}<button class="btn d" onclick="nav('badge')">🏆 আমার ব্যাজ দেখুন</button><button class="btn d" onclick="nav('home')">হোমে ফিরুন</button></div>`;
+}
+function vBadge(){
+  $('app').innerHTML=`<div class="card text-center"><div class="text-4xl">🏆</div><div class="font-bold text-lg">${bn(S.badges.length)}/${bn(BD.length)}টি ব্যাজ অর্জিত</div><div class="text-sm text-slate-500">লেভেল ${bn(lvl())} – ${lvName()} • ${bn(S.xp)} XP</div></div>
+  <div class="grid grid-cols-2 gap-3">${BD.map(b=>{const h=S.badges.includes(b[0]);return `<div class="card text-center ${h?'':'opacity-50 grayscale'}"><div class="text-4xl">${b[1]}</div><div class="font-bold">${b[2]}</div><div class="text-xs text-slate-500">${b[3]}</div></div>`}).join('')}</div>`;
+}
+
+/* ---------- Mistake bucket ---------- */
+function vMist(){
+  $('app').innerHTML=!S.mist.length?`<div class="card text-center py-10"><div class="text-5xl">🎯</div><h2 class="font-bold text-lg mt-2">কোনো দুর্বল প্রশ্ন নেই!</h2><p class="text-slate-500 text-sm mt-1">কুইজে ভুল উত্তর দিলে প্রশ্নগুলো এখানে জমা হবে।</p><button class="btn mt-4" onclick="nav('home')">কুইজ দিন</button></div>`:
+  `<div class="card"><h2 class="font-bold text-lg">দুর্বল প্রশ্ন রিভিশন</h2><p class="text-sm text-slate-500">সঠিক উত্তর দিলেই প্রশ্নটি তালিকা থেকে মুছে যাবে।</p><button class="btn g w-full mt-3" onclick="quiz('দুর্বল প্রশ্ন রিভিশন',S.mist,true)">শুধু ভুল প্রশ্নগুলো দিন (${bn(S.mist.length)}টি)</button></div>
+  ${S.mist.map((m,i)=>`<div class="card"><div class="font-semibold">${bn(i+1)}. ${esc(m.q)}</div><div class="text-sm text-emerald-700 mt-1">সঠিক উত্তর: ${esc(m.o[m.a])}</div></div>`).join('')}
+  <button class="btn d w-full" onclick="if(confirm('পুরো তালিকা মুছে ফেলবেন?')){S.mist=[];save();r()}">তালিকা পরিষ্কার করুন</button>`;
+}
+
+/* ---------- AI generator ---------- */
+function vGen(){
+  $('app').innerHTML=`<div class="card"><h2 class="font-bold text-lg mb-2">✨ ছবি বা নোট থেকে প্রশ্ন তৈরি</h2>
+  <div id="ip" class="mb-3"></div>
+  <input id="fi" type="file" accept="image/*" class="hidden" onchange="onImg(this)">
+  <div class="text-xs text-slate-500 mb-1">শুধু ছবি, শুধু লেখা, অথবা দুটোই একসঙ্গে দিতে পারেন।</div>
+  <textarea id="tx" rows="6" class="inp" placeholder="এখানে বাংলা পাঠ্যবইয়ের অংশ বা নোট পেস্ট করুন (ছবি দিলে এটি ঐচ্ছিক)..."></textarea>
+  <div class="grid grid-cols-2 gap-2 mt-3"><label class="text-sm font-semibold">প্রশ্নের সংখ্যা<select id="cn" class="inp mt-1"><option value="5">৫টি</option><option value="10">১০টি</option><option value="15">১৫টি</option></select></label>
+  <label class="text-sm font-semibold">ধরন<select id="ty" class="inp mt-1"><option value="mcq">MCQ</option><option value="sq">১ নম্বরের ছোট প্রশ্ন</option></select></label></div>
+  <div class="grid gap-2 mt-3"><button class="btn" onclick="doGen(false)">প্রশ্ন তৈরি করুন</button><button class="btn g" onclick="doGen(true)">ডেমো ট্রাই করুন</button></div><div id="gm" class="text-sm mt-2"></div></div>
+  <div class="card"><h3 class="font-bold mb-1">🔑 নিজের Gemini API Key (ঐচ্ছিক)</h3><p class="text-xs text-slate-500 mb-2">কী না দিলে সাইটের সার্ভারের এআই ব্যবহার হবে (চালু থাকলে)। নিজের কী দিলে সেটাই ব্যবহার হবে এবং শুধু আপনার ফোনের ব্রাউজারে থাকবে।</p>
+  <input id="ky" type="password" class="inp" placeholder="API Key পেস্ট করুন" value="${esc(S.key)}"><button class="btn l w-full mt-2" onclick="S.key=$('ky').value.trim();save();gm('✅ কী সংরক্ষিত হয়েছে।','emerald')">কী সংরক্ষণ করুন</button></div>
+  <div id="gr"></div>`;
+  showImg();
+  if(G)showG();
+}
+function gm(t,c){const e=$('gm');if(e)e.innerHTML=`<span class="text-${c||'rose'}-700 font-semibold">${t}</span>`}
+/* ---------- Photo upload & compression ---------- */
+function compress(f){return new Promise((ok,no)=>{
+  const u=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{try{
+    let w=im.naturalWidth,h=im.naturalHeight;if(!w||!h)throw new Error('img');
+    const k=Math.min(1,1200/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
+    const url=c.toDataURL('image/jpeg',0.8);URL.revokeObjectURL(u);
+    ok({url,b64:url.split(',')[1]});
+  }catch(e){URL.revokeObjectURL(u);no(e)}};
+  im.onerror=()=>{URL.revokeObjectURL(u);no(new Error('img'))};
+  im.src=u;
+})}
+async function onImg(inp){
+  const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+  if(!f.type.startsWith('image/'))return gm('❌ শুধু ছবির ফাইল দিন।');
+  gm('⏳ ছবি ছোট করা হচ্ছে...','indigo');
+  try{IMG=await compress(f);const e=$('gm');if(e)e.innerHTML='';showImg()}
+  catch(e){IMG=null;showImg();gm('❌ ছবিটি খোলা যায়নি। অন্য একটি ছবি দিন।')}
+}
+function rmImg(){IMG=null;showImg()}
+function showImg(){
+  const e=$('ip');if(!e)return;
+  e.innerHTML=IMG?`<div class="p-2 border-2 border-emerald-300 rounded-xl bg-emerald-50"><img src="${IMG.url}" alt="বইয়ের পাতা" class="w-full max-h-56 object-contain rounded-lg bg-white"><div class="text-xs text-emerald-700 font-semibold mt-1">✅ ছবি তৈরি – পাঠানোর আগে ছোট করা হয়েছে</div><button class="btn d w-full mt-2" onclick="rmImg()">❌ ছবি সরান</button></div>`:
+  `<label for="fi" class="block text-center cursor-pointer p-5 rounded-xl border-2 border-dashed border-indigo-400 bg-indigo-50 text-indigo-800 font-bold" style="min-height:96px"><i data-lucide="camera" class="w-8 h-8 mx-auto mb-1"></i>📷 বইয়ের পাতার ছবি তুলুন বা গ্যালারি থেকে দিন<div class="text-xs font-normal mt-1">ছবি আপনা-আপনি ছোট হয়ে যাবে, তাই ধীর নেটেও চলবে</div></label>`;
+  try{lucide.createIcons()}catch(x){}
+}
+
+/* ---------- Generate ---------- */
+async function doGen(demo){
+  if(busy)return;
+  const tx=$('tx').value.trim(),n=+$('cn').value,ty=$('ty').value;
+  let items;
+  if(demo){if(!tx&&!IMG)$('tx').value=DEMO_TEXT;items=ty==='mcq'?CH[1].qs.slice(0,n):DEMO_SH.slice(0,n);gm('ℹ️ এটি ডেমো প্রশ্ন; আপনার পাঠ্য বা ছবি থেকে তৈরি নয়।','indigo')}
+  else{
+    if(!IMG&&tx.length<60)return gm('একটি ছবি দিন, অথবা অন্তত কয়েকটি বাক্যের পাঠ্য পেস্ট করুন।');
+    S.key=$('ky').value.trim();save();
+    busy=true;gm(IMG?'⏳ পাতাটি পড়ে প্রশ্ন তৈরি হচ্ছে, একটু অপেক্ষা করুন...':'⏳ প্রশ্ন তৈরি হচ্ছে, একটু অপেক্ষা করুন...','indigo');
+    const sys='You are an expert WBBSE teacher. Create questions STRICTLY and ONLY from the content supplied by the user: the pasted text and/or the visible printed content of the attached textbook page image. If an image is attached, first read the Bengali printed text on the page very carefully. Never use outside knowledge and never invent facts that are not visible on the page or in the text. If the image is too blurry, dark, cropped or unreadable and no usable text is supplied, return exactly {"error":"unreadable"}. If the content is too short for the requested count, return fewer questions. Write everything in Bengali. Output ONLY valid JSON with no markdown fences.';
+    const fmt=ty==='mcq'?'{"questions":[{"q":"প্রশ্ন","o":["অ","আ","ই","ঈ"],"a":0,"e":"সংক্ষিপ্ত ব্যাখ্যা"}]} — exactly 4 options, "a" is the 0-based index of the correct option':'{"questions":[{"q":"প্রশ্ন","ans":"সংক্ষিপ্ত উত্তর"}]} — each answer is one short sentence worth 1 mark';
+    const src=IMG&&tx?'attached textbook page image and the text below':IMG?'attached textbook page image':'text below';
+    const parts=[{text:`Create exactly ${n} ${ty==='mcq'?'multiple-choice questions':'one-mark short-answer questions'} from the ${src}.\nJSON format: ${fmt}${tx?'\n\nTEXT:\n'+tx:''}`}];
+    if(IMG)parts.push({inlineData:{mimeType:'image/jpeg',data:IMG.b64}});
+    try{
+      const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json',temperature:0.3}});
+      if(!res.ok){let m='';try{m=((await res.json()).error||{}).message||''}catch(_){}
+        throw new Error(/API key/i.test(m)||res.status===401||res.status===403?'key':res.status===404||res.status===405?'noproxy':res.status===429?'quota':res.status===400&&IMG?'badimg':'http')}
+      const d=await res.json();
+      let t=(d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```json|```/g,'').trim();
+      let a=JSON.parse(t);
+      if(a&&a.error)throw new Error('unreadable');
+      a=Array.isArray(a)?a:a.questions;
+      items=(a||[]).filter(x=>x&&x.q&&(ty==='mcq'?Array.isArray(x.o)&&x.o.length>=2&&Number.isInteger(x.a)&&x.o[x.a]!==undefined:x.ans)).slice(0,n);
+      if(!items.length)throw new Error(IMG?'unreadable':'empty');
+      gm('✅ প্রশ্ন তৈরি হয়েছে!','emerald');
+    }catch(e){
+      busy=false;
+      const E={key:'❌ API Key সঠিক নয় বা অনুমতি নেই। কী পরীক্ষা করুন।',quota:'❌ বিনামূল্যের সীমা শেষ বা অনেক বেশি অনুরোধ হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।',unreadable:'❌ ছবিটি ঝাপসা বা পড়া যাচ্ছে না। ভালো আলোয়, সোজা করে, লেখা পরিষ্কার দেখা যায় এমন ছবি তুলে আবার দিন।',badimg:'❌ ছবিটি পাঠানো যায়নি। অন্য একটি ছবি দিয়ে চেষ্টা করুন।',empty:'❌ এআই সঠিক ফরম্যাটে উত্তর দেয়নি। আবার চেষ্টা করুন।',noproxy:'❌ এই সাইটে সার্ভারের এআই চালু নেই। নিচের ঘরে নিজের Gemini API Key দিন।'};
+      return gm(E[e.message]||(e.name==='SyntaxError'?E.empty:'❌ সংযোগ বা সার্ভারে সমস্যা হয়েছে। ইন্টারনেট দেখে আবার চেষ্টা করুন।'));
+    }
+    busy=false;
+  }
+  G={t:'এআই জেনারেটেড প্রশ্ন',items};setCur(G.t,items,'');showG();
+}
+function showG(){
+  const el=$('gr');if(!el||!G)return;const mcq=G.items[0].o;
+  el.innerHTML=`<div class="card"><h3 class="font-bold mb-2">তৈরি প্রশ্ন (${bn(G.items.length)}টি)</h3>
+  ${G.items.map((x,i)=>`<div class="mb-3 pb-3 border-b"><div class="font-semibold">${bn(i+1)}. ${esc(x.q)}</div>${x.o?x.o.map((o,j)=>`<div class="text-sm ${j===x.a?'text-emerald-700 font-bold':'text-slate-600'}">${L[j]||j+1}) ${esc(o)}</div>`).join(''):`<div class="text-sm text-emerald-700">উত্তর: ${esc(x.ans)}</div>`}</div>`).join('')}
+  <div class="grid gap-2">${mcq?`<button class="btn" onclick="quiz(G.t,G.items,false)">এই প্রশ্নে কুইজ দিন</button>`:''}<button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান / প্রিন্ট</button></div></div>`;
+}
+
+/* ---------- Question paper ---------- */
+function vPaper(){
+  if(!CUR){$('app').innerHTML=`<div class="card text-center py-8"><div class="text-5xl">📄</div><h2 class="font-bold text-lg mt-2">প্রশ্নপত্র বানাতে একটি অধ্যায় বেছে নিন</h2>
+  <div class="grid gap-2 mt-4">${CH.map((c,i)=>`<button class="btn l" onclick="goPaper(${i})">${c.sub}: ${c.t}</button>`).join('')}</div></div>`;return}
+  $('app').innerHTML=`<div class="card noprint"><h2 class="font-bold text-lg mb-2">📄 প্রশ্নপত্র সেটিংস</h2>
+  <div class="grid gap-2">
+  <input class="inp" value="${esc(F.sch)}" oninput="F.sch=this.value;pb()" placeholder="স্কুল / কোচিং-এর নাম">
+  <div class="grid grid-cols-2 gap-2"><input class="inp" value="${esc(F.cls)}" oninput="F.cls=this.value;pb()" placeholder="শ্রেণি"><input class="inp" value="${esc(F.sub)}" oninput="F.sub=this.value;pb()" placeholder="বিষয়"><input class="inp" value="${esc(F.fm)}" oninput="F.fm=this.value;pb()" placeholder="পূর্ণমান"><input class="inp" value="${esc(F.tm)}" oninput="F.tm=this.value;pb()" placeholder="সময়"></div>
+  <label class="flex items-center gap-2 font-semibold py-2"><input type="checkbox" class="w-5 h-5" ${F.ans?'checked':''} onchange="F.ans=this.checked;pb()"> উত্তরপত্র দেখান / লুকান</label>
+  <button class="btn g" onclick="window.print()">🖨️ PDF ডাউনলোড / প্রিন্ট</button><p class="text-xs text-slate-500">প্রিন্ট ডায়ালগে “PDF হিসেবে সংরক্ষণ করুন” বেছে নিন।</p></div></div><div id="paper"></div>`;
+}
+function pb(){
+  const e=$('paper');if(!e||!CUR)return;const it=CUR.items;
+  e.innerHTML=`<div class="text-center border-b-2 border-slate-800 pb-2 mb-3"><div class="text-xl font-bold">${esc(F.sch)}</div><div class="font-semibold">${esc(F.cls)} • ${esc(F.sub)}${F.ans?' • <u>উত্তরপত্র</u>':''}</div>
+  <div class="flex justify-between text-sm mt-1"><span>সময়: ${esc(F.tm)}</span><span>পূর্ণমান: ${esc(F.fm)}</span></div></div>
+  <div class="text-sm font-semibold mb-2">সকল প্রশ্নের উত্তর দাও। প্রতিটি প্রশ্নের মান ১।</div>
+  ${it.map((x,i)=>`<div class="mb-3" style="break-inside:avoid"><div class="font-semibold">${bn(i+1)}. ${esc(x.q)}</div>
+  ${x.o?`<div class="grid grid-cols-2 gap-x-4 pl-5 text-sm">${x.o.map((o,j)=>`<div class="${F.ans&&j===x.a?'font-bold underline':''}">(${L[j]||j+1}) ${esc(o)}</div>`).join('')}</div>${F.ans?`<div class="pl-5 text-sm font-semibold">উত্তর: (${L[x.a]}) ${esc(x.o[x.a])}</div>`:''}`:(F.ans?`<div class="pl-5 text-sm font-semibold">উত্তর: ${esc(x.ans)}</div>`:'<div class="h-6 border-b border-dotted border-slate-400 ml-5"></div>')}</div>`).join('')}`;
+}
+
+r();
+</script>
+</body>
+</html>
