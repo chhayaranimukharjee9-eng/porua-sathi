@@ -30,6 +30,7 @@ module.exports = async (req, res) => {
   const body = {
     contents: b.contents,
     systemInstruction: b.systemInstruction,
+    ...(Array.isArray(b.tools) && b.tools.length === 1 && b.tools[0] && b.tools[0].google_search ? { tools: [{ google_search: {} }] } : {}),
     generationConfig: {
       temperature: typeof gc.temperature === 'number' ? Math.min(Math.max(gc.temperature, 0), 1) : 0.4,
       ...(gc.responseMimeType === 'application/json' ? { responseMimeType: 'application/json' } : {})
