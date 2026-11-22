@@ -6,6 +6,7 @@
 <title>পড়ুয়া সাথী – WBBSE স্টাডি ও কুইজ</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
 body{font-family:'Hind Siliguri',system-ui,sans-serif;background:#f1f5f9;color:#0f172a}
@@ -117,8 +118,8 @@ function setCur(t,items,sub){CUR={t,items};F.sub=sub||t;F.fm=bn(items.length)}
 function r(){
   const tabs=[['home','house','হোম'],['gen','sparkles','এআই'],['mist','repeat','দুর্বল প্রশ্ন'],['paper','file-text','প্রশ্নপত্র'],['badge','trophy','ব্যাজ']];
   $('nav').innerHTML=tabs.map(t=>`<button class="nv ${tab===t[0]?'on':''}" onclick="nav('${t[0]}')"><i data-lucide="${t[1]}" class="w-6 h-6"></i>${t[2]}${t[0]==='mist'&&S.mist.length?`<span class="absolute top-1 right-[22%] bg-rose-500 text-white rounded-full text-[10px] px-1.5">${bn(S.mist.length)}</span>`:''}</button>`).join('');
-  if(tab==='setup')$('nav').innerHTML='';
-  ({home:vHome,gen:vGen,mist:vMist,paper:vPaper,badge:vBadge,alya:vAlya,setup:vSetup}[tab]||(()=>{}))();
+  if(tab==='setup'||tab==='call')$('nav').innerHTML='';
+  ({home:vHome,gen:vGen,mist:vMist,paper:vPaper,badge:vBadge,alya:vAlya,setup:vSetup,call:vCall}[tab]||(()=>{}))();
   bar();try{lucide.createIcons()}catch(e){}
   if(tab==='paper')pb();
 }
@@ -127,6 +128,7 @@ function vHome(){
   $('app').innerHTML=`<div class="card bg-gradient-to-br from-indigo-600 to-emerald-500 text-white"><h1 class="text-xl font-bold">স্বাগতম! 👋</h1><p class="text-sm opacity-90 mt-1">প্রতিদিন অল্প অল্প করে পড়ুন, কুইজ দিন, স্ট্রিক বাড়ান।</p></div>
   ${profCard()}
   <button class="btn g w-full mb-3" onclick="nav('alya')">🤖 আলিয়া এআই-এর সঙ্গে কথা বলুন</button>
+  <button class="btn w-full mb-3" style="background:#0ea5e9" onclick="nav('call')">📹 ভিডিও কল করুন</button>
   <div class="card"><div class="flex justify-between font-bold"><span>👑 লেভেল ${bn(lvl())} – ${lvName()}</span><span class="text-sm text-slate-500">${bn(S.xp%100)}/১০০ XP</span></div><div class="h-3 bg-slate-200 rounded-full mt-2"><div class="h-3 bg-amber-400 rounded-full" style="width:${S.xp%100}%"></div></div><div class="text-xs text-slate-500 mt-2">❤️ প্রতি কুইজে ৩টি জীবন • টানা সঠিক উত্তরে কম্বো বোনাস XP • 🤖 এআই গুরু ভুল বুঝিয়ে দেবেন</div></div>
   <h2 class="font-bold mb-2 text-slate-700">অধ্যায়ভিত্তিক কুইজ (প্রতি প্রশ্নে ৩০ সেকেন্ড)</h2>
   ${CH.map((c,i)=>`<div class="card"><div class="flex items-center gap-3"><div class="p-3 rounded-xl bg-indigo-100 text-indigo-700"><i data-lucide="${c.ic}" class="w-7 h-7"></i></div><div><div class="text-xs text-emerald-700 font-semibold">${c.sub} • ${c.cls}</div><div class="font-bold text-lg">${c.t}</div><div class="text-sm text-slate-500">${bn(c.qs.length)}টি MCQ</div></div></div>
@@ -281,6 +283,87 @@ async function genCommon(ty){
     hm('<span class="text-rose-700 font-semibold">'+emsg(e,E)+'</span>');
   }
 }
+/* ---------- Video call (WebRTC via PeerJS) ---------- */
+let C={peer:null,stream:null,call:null,code:'',lock:null,ok:false};
+const AL='abcdefghjkmnpqrstuvwxyz23456789';
+const callLink=()=>location.href.split('#')[0]+'#call='+C.code;
+const cmsg=()=>'আমার সঙ্গে ভিডিও কলে যোগ দিন: '+callLink();
+function numFix(n){let d=String(n||'').replace(/\D/g,'');if(d.length===10)d='91'+d;else if(d.length===11&&d[0]==='0')d='91'+d.slice(1);return d}
+function attach(el,st){if(el){el.srcObject=st;if(el.play)el.play().catch(()=>{})}}
+async function wl(){try{C.lock=await navigator.wakeLock.request('screen')}catch(e){}}
+async function getMedia(){
+  if(typeof Peer==='undefined'){toast('কল সুবিধা লোড হয়নি, নেট দেখুন');return false}
+  try{C.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:true});return true}
+  catch(e){toast('ক্যামেরা ও মাইকের অনুমতি দিন');return false}
+}
+function vCall(){
+  $('app').innerHTML=`<button class="btn d mb-3" onclick="nav('home')">← হোম</button>
+  <div class="card"><h2 class="font-bold text-lg mb-1">📹 ভিডিও কল</h2><p class="text-sm text-slate-600">লিংক পাঠিয়ে যে কারও সঙ্গে ভিডিও কল করুন। অন্য জনকে কিছু ইনস্টল করতে হবে না, শুধু লিংক খুললেই হবে।</p>
+  <button class="btn w-full mt-3" onclick="startCall()">📞 নতুন কল শুরু করুন</button>
+  <div class="mt-4 text-sm font-semibold">কোড পেয়েছেন? যোগ দিন</div><div class="flex gap-2 mt-1"><input id="jc" class="inp" placeholder="কল কোড" maxlength="6"><button class="btn g" onclick="joinCall($('jc').value)">যোগ দিন</button></div></div>
+  <div class="card text-xs text-slate-500">ℹ️ ফোন নম্বরে সরাসরি “রিং” করা যায় না (তার জন্য টাকার টেলিকম পরিষেবা লাগে)। তাই নম্বর দিলে অ্যাপ ওই নম্বরে কলের লিংক পাঠানোর ব্যবস্থা করে দেয়।</div>`;
+}
+async function startCall(){
+  if(!await getMedia())return;
+  C.code=Array.from({length:6},()=>AL[Math.random()*AL.length|0]).join('');C.ok=false;
+  C.peer=new Peer('porua-'+C.code);
+  C.peer.on('open',vWait);
+  C.peer.on('call',c=>{c.answer(C.stream);hook(c)});
+  C.peer.on('error',e=>toast('কল সংযোগে সমস্যা, আবার চেষ্টা করুন'));
+  wl();
+}
+function vWait(){
+  $('app').innerHTML=`<div class="card"><div class="text-center font-bold">কল কোড: <span class="text-2xl tracking-widest text-indigo-700">${C.code}</span></div>
+  <video id="lv" autoplay muted playsinline class="w-full rounded-xl bg-slate-900 mt-2" style="max-height:240px;object-fit:cover"></video>
+  <p class="text-sm text-slate-600 mt-2">⏳ অন্য জন লিংক খুললেই কল শুরু হবে। এই পাতা খোলা রাখুন।</p></div>
+  <div class="card"><div class="font-semibold mb-1">লিংক পাঠান</div><input id="nm" type="tel" class="inp" placeholder="ফোন নম্বর (যেমন 98XXXXXXXX)">
+  <div class="grid grid-cols-2 gap-2 mt-2"><button class="btn g" onclick="sendWA()">💬 WhatsApp</button><button class="btn l" onclick="sendSMS()">✉️ SMS</button><button class="btn d" onclick="copyL()">📋 লিংক কপি</button><button class="btn d" onclick="shareL()">↗️ শেয়ার</button></div></div>
+  <div class="card text-xs text-slate-600">ছবি না এলে ব্যাকআপ: <button class="underline text-indigo-700" onclick="jitsi()">Jitsi দিয়ে কল করুন</button> (লিংক কপি হবে, অন্য জনকে পাঠান)</div>
+  <button class="btn d w-full" onclick="endCall()">❌ বাতিল করুন</button>`;
+  attach($('lv'),C.stream);
+}
+function hook(c){
+  C.call=c;
+  c.on('stream',rs=>{C.ok=true;showCall(rs)});
+  c.on('close',()=>{if(C.peer)endCall(true)});
+}
+function showCall(rs){
+  $('app').innerHTML=`<div class="relative"><video id="rv" autoplay playsinline class="w-full rounded-xl bg-slate-900" style="height:60vh;object-fit:cover"></video><video id="lv" autoplay muted playsinline class="absolute right-2 bottom-2 w-28 rounded-lg border-2 border-white bg-slate-800"></video></div>
+  <div class="grid grid-cols-3 gap-2 mt-3"><button class="btn d" id="ba" onclick="tg('a')">🎤 মাইক</button><button class="btn d" id="bv" onclick="tg('v')">📷 ক্যামেরা</button><button class="btn" style="background:#e11d48" onclick="endCall()">📵 শেষ</button></div>`;
+  attach($('rv'),rs);attach($('lv'),C.stream);
+}
+function tg(k){
+  const t=k==='a'?C.stream.getAudioTracks()[0]:C.stream.getVideoTracks()[0];if(!t)return;
+  t.enabled=!t.enabled;$(k==='a'?'ba':'bv').textContent=(k==='a'?'🎤 মাইক':'📷 ক্যামেরা')+(t.enabled?'':' বন্ধ');
+}
+async function joinCall(code){
+  code=String(code||'').trim().toLowerCase();if(code.length<4)return toast('সঠিক কোড দিন');
+  if(!await getMedia())return;
+  C.code=code;C.ok=false;C.peer=new Peer();
+  $('app').innerHTML=`<div class="card text-center font-semibold">⏳ কলে যুক্ত হচ্ছি...</div><button class="btn d w-full" onclick="endCall()">বাতিল করুন</button>`;
+  C.peer.on('open',()=>{
+    hook(C.peer.call('porua-'+code,C.stream));
+    setTimeout(()=>{if(!C.ok&&C.peer)toast('সংযোগ হয়নি। কোড ঠিক আছে কি দেখুন বা Jitsi ব্যবহার করুন')},15000);
+  });
+  C.peer.on('error',e=>toast(e.type==='peer-unavailable'?'এই কোডে এখন কেউ নেই':'সংযোগে সমস্যা, আবার চেষ্টা করুন'));
+  wl();
+}
+function endCall(remote){
+  try{C.call&&C.call.close()}catch(e){}
+  try{C.peer&&C.peer.destroy()}catch(e){}
+  try{C.stream&&C.stream.getTracks().forEach(t=>t.stop())}catch(e){}
+  try{C.lock&&C.lock.release()}catch(e){}
+  C={peer:null,stream:null,call:null,code:'',lock:null,ok:false};
+  try{history.replaceState(null,'',location.href.split('#')[0])}catch(e){}
+  if(remote)toast('কল শেষ হয়েছে');
+  nav('home');
+}
+function sendWA(){const n=numFix($('nm').value);window.open('https://wa.me/'+n+'?text='+encodeURIComponent(cmsg()),'_blank')}
+function sendSMS(){const n=numFix($('nm').value);location.href='sms:'+(n?'+'+n:'')+'?body='+encodeURIComponent(cmsg())}
+async function copyL(){try{await navigator.clipboard.writeText(callLink());toast('✅ লিংক কপি হয়েছে')}catch(e){prompt('লিংক কপি করুন',callLink())}}
+function shareL(){if(navigator.share)navigator.share({text:cmsg()}).catch(()=>{});else copyL()}
+function jitsi(){const u='https://meet.jit.si/porua-sathi-'+C.code;try{navigator.clipboard.writeText(u)}catch(e){}toast('Jitsi লিংক কপি হয়েছে, অন্য জনকে পাঠান');window.open(u,'_blank')}
+
 function vAlya(){
   $('app').innerHTML=`<div class="flex gap-2 mb-2"><button class="btn d" onclick="nav('home')">← হোম</button><a class="btn l flex-1" href="${ALYA}" target="_blank" rel="noopener">নতুন ট্যাবে খুলুন ↗</a></div>
   <iframe src="${ALYA}" title="আলিয়া এআই" allow="microphone; camera; clipboard-write" class="w-full bg-white rounded-xl border" style="height:calc(100vh - 190px);min-height:420px"></iframe>
@@ -410,6 +493,7 @@ function pb(){
 
 if(S.prof){F.sch=S.prof.sch||F.sch;F.cls=S.prof.cls+' শ্রেণি';F.sub=S.prof.sub}else tab='setup';
 r();
+{const hc=location.hash.match(/^#call=([a-z0-9]+)/);if(hc){tab='call';r();joinCall(hc[1])}}
 </script>
 </body>
 </html>
