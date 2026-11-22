@@ -53,7 +53,7 @@ const dkey=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 const L='কখগঘ';
 const ALYA='https://a-l-y-a-5c4e.vercel.app/';
 const PROXY='/api/gemini'; // GitHub Pages-এ দিলে এখানে পুরো Vercel লিংক বসান, যেমন https://আপনার-অ্যাপ.vercel.app/api/gemini
-const GURL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const GURL='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
 function callG(body){
   return S.key?fetch(GURL,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':S.key},body:JSON.stringify(body)})
               :fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -170,7 +170,7 @@ function pick(j){
 function nx(){if(!Z.rev&&Z.lives<=0)return res(true);Z.i++;Z.i>=Z.qs.length?res():rq()}
 async function ask(p){
   const sys='তুমি “এআই গুরু”, WBBSE ছাত্রছাত্রীদের বন্ধুসুলভ শিক্ষক। শুধু দেওয়া প্রশ্নটি নিয়েই সহজ বাংলায়, সর্বোচ্চ ৪টি ছোট বাক্যে উত্তর দাও। বাইরের তথ্য বানিও না। একটি মনে রাখার সহজ কৌশল দাও।';
-  const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts:[{text:p}]}],generationConfig:{temperature:0.4}});
+  const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts:[{text:p}]}]});
   if(!res.ok)throw new Error('http');
   const d=await res.json();return (d.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('').trim()||'';
 }
@@ -241,7 +241,7 @@ function profCard(){
 }
 async function research(P){
   const q=`Search the web and find: (1) the official textbook used by the ${P.state} school board for Class ${P.cls}, subject ${P.sub} (book name and publisher); (2) the key topics and important sub-topics of the lesson "${P.les||'the main chapters'}" in that textbook; (3) which topics and question types are asked most often in past board or school exams, according to question banks or past papers you can find. Answer in Bengali, plain text, under 300 words. Do not invent anything; if something cannot be found, say so.`;
-  const res=await callG({systemInstruction:{parts:[{text:'You are a careful academic researcher. Use web search and report only what you actually find.'}]},contents:[{parts:[{text:q}]}],tools:[{google_search:{}}],generationConfig:{temperature:0.2}});
+  const res=await callG({systemInstruction:{parts:[{text:'You are a careful academic researcher. Use web search and report only what you actually find.'}]},contents:[{parts:[{text:q}]}],tools:[{google_search:{}}]});
   if(!res.ok)throw new Error('rs');
   const d=await res.json(),c=d.candidates&&d.candidates[0];
   const sum=((c&&c.content&&c.content.parts)||[]).map(x=>x.text||'').join('').trim();
@@ -267,7 +267,7 @@ async function genCommon(ty){
   const parts=[{text:`Create exactly 15 ${ty==='mcq'?'multiple-choice questions':'one-mark short-answer questions'} most likely to appear commonly in exams.\nContext: ${ctx}${ref?'\n\nREFERENCE (web research summary: book, key topics, frequently asked areas). Use it to choose the important topics and stay aligned with the textbook; do not repeat unverified claims:\n'+ref.sum:''}\nJSON format: ${fmt}${PDFB?'\nUse ONLY the attached PDF as the source.':''}`}];
   if(PDFB)parts.push({inlineData:{mimeType:'application/pdf',data:PDFB.b64}});
   try{
-    const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json',temperature:0.3}});
+    const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json'}});
     if(!res.ok){let m='';try{m=((await res.json()).error||{}).message||''}catch(_){}
       throw ge(/API key/i.test(m)||res.status===401||res.status===403?'key':(res.status===404||res.status===405)&&(!m||m==='POST only')?'noproxy':res.status===429?'quota':'http',res,m)}
     const d=await res.json();
@@ -444,7 +444,7 @@ async function doGen(demo){
     const parts=[{text:`Create exactly ${n} ${ty==='mcq'?'multiple-choice questions':'one-mark short-answer questions'} from the ${src}.\nJSON format: ${fmt}${tx?'\n\nTEXT:\n'+tx:''}`}];
     if(IMG)parts.push({inlineData:{mimeType:'image/jpeg',data:IMG.b64}});
     try{
-      const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json',temperature:0.3}});
+      const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json'}});
       if(!res.ok){let m='';try{m=((await res.json()).error||{}).message||''}catch(_){}
         throw ge(/API key/i.test(m)||res.status===401||res.status===403?'key':(res.status===404||res.status===405)&&(!m||m==='POST only')?'noproxy':res.status===429?'quota':res.status===400&&IMG?'badimg':'http',res,m)}
       const d=await res.json();
