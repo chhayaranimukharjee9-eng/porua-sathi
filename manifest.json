@@ -1,0 +1,16 @@
+{
+  "name": "পড়ুয়া সাথী",
+  "short_name": "পড়ুয়া সাথী",
+  "description": "WBBSE ছাত্রছাত্রীদের জন্য বাংলা কুইজ, এআই প্রশ্ন ও স্টাডি অ্যাপ",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "bn",
+  "background_color": "#f1f5f9",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>পড়ুয়া সাথী – WBBSE স্টাডি ও কুইজ</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
@@ -44,7 +47,7 @@ const st={get(k){try{const v=localStorage.getItem(k);return v===null?(mem[k]??nu
 set(k,v){mem[k]=v;try{localStorage.setItem(k,v)}catch(e){}}};
 let S={};
 try{S=JSON.parse(st.get('wb_state')||'null')||{}}catch(e){S={}}
-S=Object.assign({xp:0,streak:0,last:'',mist:[],key:'',corr:0,qz:0,perf:0,bc:0,cleared:0,badges:[]},S);
+S=Object.assign({xp:0,streak:0,last:'',mist:[],key:'',corr:0,qz:0,perf:0,bc:0,cleared:0,badges:[],att:0,topics:{}},S);
 const save=()=>st.set('wb_state',JSON.stringify(S));
 const $=id=>document.getElementById(id);
 const bn=n=>String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
@@ -110,25 +113,26 @@ function emsg(e,E){return (E[e.message]||(e.name==='SyntaxError'?E.empty:'❌ �
 function bar(){$('xp').textContent=bn(S.xp);$('st').textContent=bn(S.streak);$('lv').textContent='Lv '+bn(lvl())}
 function touch(){const t=dkey(new Date());if(S.last===t)return;
   S.streak=S.last===dkey(new Date(Date.now()-864e5))?S.streak+1:1;S.last=t}
-function addM(q){if(!S.mist.some(m=>m.q===q.q))S.mist.push({q:q.q,o:q.o,a:q.a,e:q.e})}
+function addM(q){if(!S.mist.some(m=>m.q===q.q))S.mist.push({q:q.q,o:q.o,a:q.a,e:q.e,tp:q.tp||(Z.rev?'':Z.title)||''})}
 function nav(t){clearInterval(Z.iv);tab=t;r()}
 function setCur(t,items,sub){CUR={t,items};F.sub=sub||t;F.fm=bn(items.length)}
 
 /* ---------- Render ---------- */
 function r(){
-  const tabs=[['home','house','হোম'],['gen','sparkles','এআই'],['mist','repeat','দুর্বল প্রশ্ন'],['paper','file-text','প্রশ্নপত্র'],['badge','trophy','ব্যাজ']];
+  const tabs=[['home','house','হোম'],['gen','sparkles','এআই'],['mist','repeat','দুর্বল প্রশ্ন'],['paper','file-text','প্রশ্নপত্র'],['badge','trophy','অগ্রগতি']];
   $('nav').innerHTML=tabs.map(t=>`<button class="nv ${tab===t[0]?'on':''}" onclick="nav('${t[0]}')"><i data-lucide="${t[1]}" class="w-6 h-6"></i>${t[2]}${t[0]==='mist'&&S.mist.length?`<span class="absolute top-1 right-[22%] bg-rose-500 text-white rounded-full text-[10px] px-1.5">${bn(S.mist.length)}</span>`:''}</button>`).join('');
   if(tab==='setup'||tab==='call')$('nav').innerHTML='';
-  ({home:vHome,gen:vGen,mist:vMist,paper:vPaper,badge:vBadge,alya:vAlya,setup:vSetup,call:vCall}[tab]||(()=>{}))();
+  ({home:vHome,gen:vGen,mist:vMist,paper:vPaper,badge:vBadge,alya:vAlya,setup:vSetup,call:vCall,doubt:vDoubt}[tab]||(()=>{}))();
   bar();try{lucide.createIcons()}catch(e){}
   if(tab==='paper')pb();
 }
 
 function vHome(){
   $('app').innerHTML=`<div class="card bg-gradient-to-br from-indigo-600 to-emerald-500 text-white"><h1 class="text-xl font-bold">স্বাগতম! 👋</h1><p class="text-sm opacity-90 mt-1">প্রতিদিন অল্প অল্প করে পড়ুন, কুইজ দিন, স্ট্রিক বাড়ান।</p></div>
-  ${profCard()}
+  ${instBtn()}${profCard()}
   <button class="btn g w-full mb-3" onclick="nav('alya')">🤖 আলিয়া এআই-এর সঙ্গে কথা বলুন</button>
   <button class="btn w-full mb-3" style="background:#0ea5e9" onclick="nav('call')">📹 ভিডিও কল করুন</button>
+  <button class="btn w-full mb-3" style="background:#7c3aed" onclick="nav('doubt')">📸 ছবি তুলে ডাউট সমাধান</button>
   <div class="card"><div class="flex justify-between font-bold"><span>👑 লেভেল ${bn(lvl())} – ${lvName()}</span><span class="text-sm text-slate-500">${bn(S.xp%100)}/১০০ XP</span></div><div class="h-3 bg-slate-200 rounded-full mt-2"><div class="h-3 bg-amber-400 rounded-full" style="width:${S.xp%100}%"></div></div><div class="text-xs text-slate-500 mt-2">❤️ প্রতি কুইজে ৩টি জীবন • টানা সঠিক উত্তরে কম্বো বোনাস XP • 🤖 এআই গুরু ভুল বুঝিয়ে দেবেন</div></div>
   <h2 class="font-bold mb-2 text-slate-700">অধ্যায়ভিত্তিক কুইজ (প্রতি প্রশ্নে ৩০ সেকেন্ড)</h2>
   ${CH.map((c,i)=>`<div class="card"><div class="flex items-center gap-3"><div class="p-3 rounded-xl bg-indigo-100 text-indigo-700"><i data-lucide="${c.ic}" class="w-7 h-7"></i></div><div><div class="text-xs text-emerald-700 font-semibold">${c.sub} • ${c.cls}</div><div class="font-bold text-lg">${c.t}</div><div class="text-sm text-slate-500">${bn(c.qs.length)}টি MCQ</div></div></div>
@@ -155,6 +159,7 @@ function hearts(){return '❤️'.repeat(Z.lives)+'🖤'.repeat(3-Z.lives)}
 function pick(j){
   if(Z.sel!==null)return;clearInterval(Z.iv);Z.sel=j;
   const q=Z.qs[Z.i],ok=j===q.a;touch();let gain=0;
+  {const tk=q.tp||(Z.rev?'':Z.title);S.att=(S.att||0)+1;if(tk){const tt=(S.topics[tk]=S.topics[tk]||{r:0,w:0});ok?tt.r++:tt.w++}}
   if(ok){Z.sc++;Z.combo++;Z.best=Math.max(Z.best,Z.combo);S.corr++;gain=10+Math.min(Z.combo-1,5)*2;
     if(Z.rev){S.mist=S.mist.filter(m=>m.q!==q.q);S.cleared++;gain+=5}
     addXP(gain)}
@@ -168,8 +173,8 @@ function pick(j){
   <button class="btn w-full mt-3" onclick="nx()">${dead?'খেলা শেষ 💔':Z.i+1<Z.qs.length?'পরের প্রশ্ন →':'ফলাফল দেখুন'}</button>`;
 }
 function nx(){if(!Z.rev&&Z.lives<=0)return res(true);Z.i++;Z.i>=Z.qs.length?res():rq()}
-async function ask(p){
-  const sys='তুমি “এআই গুরু”, WBBSE ছাত্রছাত্রীদের বন্ধুসুলভ শিক্ষক। শুধু দেওয়া প্রশ্নটি নিয়েই সহজ বাংলায়, সর্বোচ্চ ৪টি ছোট বাক্যে উত্তর দাও। বাইরের তথ্য বানিও না। একটি মনে রাখার সহজ কৌশল দাও।';
+async function ask(p,sy){
+  const sys=sy||'তুমি “এআই গুরু”, WBBSE ছাত্রছাত্রীদের বন্ধুসুলভ শিক্ষক। শুধু দেওয়া প্রশ্নটি নিয়েই সহজ বাংলায়, সর্বোচ্চ ৪টি ছোট বাক্যে উত্তর দাও। বাইরের তথ্য বানিও না। একটি মনে রাখার সহজ কৌশল দাও।';
   const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts:[{text:p}]}]});
   if(!res.ok)throw new Error('http');
   const d=await res.json();return (d.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('').trim()||'';
@@ -191,7 +196,7 @@ function res(over){
   const m=over?'তিনটি জীবনই শেষ! ভুলগুলো রিভিশন করে আবার চেষ্টা করুন।':p>=80?'🎉 চমৎকার! চালিয়ে যান।':p>=50?'👍 ভালো হয়েছে, আরেকটু অনুশীলন করুন।':'💪 হাল ছাড়বেন না, ভুল প্রশ্নগুলো রিভিশন করুন।';
   $('app').innerHTML=`<div class="card text-center"><div class="text-5xl mb-2">${over?'💔':'🏆'}</div><h2 class="text-xl font-bold">${over?'খেলা শেষ!':'কুইজ সম্পন্ন!'}</h2>
   <div class="text-4xl font-bold text-emerald-600 my-3">${bn(Z.sc)}/${bn(n)}</div><div class="text-slate-600">${bn(p)}% সঠিক • সেরা কম্বো ×${bn(Z.best)}${bonus?' • বোনাস +২০ XP':''}</div><p class="mt-3 font-semibold">${m}</p></div>
-  <div class="grid gap-2">${!Z.rev?`<button class="btn" onclick="quiz(Z.title,Z.qs,false)">আবার খেলুন</button>`:''}${S.mist.length?`<button class="btn g" onclick="nav('mist')">দুর্বল প্রশ্ন রিভিশন (${bn(S.mist.length)}টি)</button>`:''}${CUR&&!Z.rev?`<button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান</button>`:''}<button class="btn d" onclick="nav('badge')">🏆 আমার ব্যাজ দেখুন</button><button class="btn d" onclick="nav('home')">হোমে ফিরুন</button></div>`;
+  <div class="grid gap-2">${!Z.rev?`<button class="btn" onclick="quiz(Z.title,Z.qs,false)">আবার খেলুন</button>`:''}${S.mist.length?`<button class="btn g" onclick="nav('mist')">দুর্বল প্রশ্ন রিভিশন (${bn(S.mist.length)}টি)</button>`:''}${CUR&&!Z.rev?`<button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান</button>`:''}${!Z.rev?'<button class="btn l" onclick="shareSet(Z.title,Z.qs)">🔗 কুইজ লিংক শেয়ার করুন</button>':''}<button class="btn d" onclick="nav('badge')">🏆 আমার অগ্রগতি ও ব্যাজ</button><button class="btn d" onclick="nav('home')">হোমে ফিরুন</button></div>`;
 }
 /* ---------- Setup wizard + common questions ---------- */
 const DIST=['কলকাতা','উত্তর ২৪ পরগনা','দক্ষিণ ২৪ পরগনা','হাওড়া','হুগলি','নদিয়া','মুর্শিদাবাদ','বীরভূম','পূর্ব বর্ধমান','পশ্চিম বর্ধমান','বাঁকুড়া','পুরুলিয়া','পূর্ব মেদিনীপুর','পশ্চিম মেদিনীপুর','ঝাড়গ্রাম','মালদা','উত্তর দিনাজপুর','দক্ষিণ দিনাজপুর','জলপাইগুড়ি','আলিপুরদুয়ার','কোচবিহার','দার্জিলিং','কালিম্পং'];
@@ -364,12 +369,117 @@ async function copyL(){try{await navigator.clipboard.writeText(callLink());toast
 function shareL(){if(navigator.share)navigator.share({text:cmsg()}).catch(()=>{});else copyL()}
 function jitsi(){const u='https://meet.jit.si/porua-sathi-'+C.code;try{navigator.clipboard.writeText(u)}catch(e){}toast('Jitsi লিংক কপি হয়েছে, অন্য জনকে পাঠান');window.open(u,'_blank')}
 
+/* ---------- Share set link ---------- */
+const b64u=buf=>{const u=new Uint8Array(buf);let b='';for(let i=0;i<u.length;i++)b+=String.fromCharCode(u[i]);return btoa(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+async function packSet(o){
+  const js=new TextEncoder().encode(JSON.stringify(o));
+  if(window.CompressionStream){const st=new Blob([js]).stream().pipeThrough(new CompressionStream('deflate-raw'));return 'z'+b64u(await new Response(st).arrayBuffer())}
+  return 'p'+b64u(js);
+}
+async function unpackSet(t){
+  const raw=Uint8Array.from(atob(t.slice(1).replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+  const bytes=t[0]==='z'?await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer():raw;
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+async function shareSet(t,items){
+  if(!items||!items.length)return toast('আগে প্রশ্ন তৈরি করুন');
+  try{
+    const code=await packSet({t,i:items.map(x=>x.o?{q:x.q,o:x.o,a:x.a,e:x.e,tp:x.tp}:{q:x.q,ans:x.ans,tp:x.tp})});
+    const url=location.href.split('#')[0]+'#q='+code,msg='এই কুইজটা দিয়ে দেখো: '+t;
+    if(navigator.share){try{await navigator.share({title:t,text:msg,url});return}catch(e){if(e&&e.name==='AbortError')return}}
+    try{await navigator.clipboard.writeText(msg+' '+url);toast('✅ লিংক কপি হয়েছে, এবার পাঠিয়ে দিন')}catch(e){prompt('লিংক কপি করুন',url)}
+  }catch(e){toast('লিংক বানানো যায়নি')}
+}
+async function openShared(code){
+  try{
+    const d=await unpackSet(code),t=d.t||'শেয়ার করা কুইজ';
+    const it=(d.i||[]).filter(x=>x&&x.q&&(x.o?Array.isArray(x.o)&&Number.isInteger(x.a)&&x.o[x.a]!==undefined:!!x.ans));
+    if(!it.length)throw new Error('empty');
+    setCur(t,it,t);
+    if(it[0].o)quiz(t,it,false);else nav('paper');
+  }catch(e){toast('লিংকটি খোলা যায়নি')}
+}
+
+/* ---------- Progress & weak topics ---------- */
+let PR=[];
+function progHtml(){
+  const T=S.topics||{};
+  PR=Object.keys(T).map(k=>({k,n:T[k].r+T[k].w,p:Math.round(T[k].r/Math.max(1,T[k].r+T[k].w)*100)})).filter(x=>x.n>0).sort((a,b)=>a.p-b.p||b.n-a.n).slice(0,6);
+  const att=S.att||0,pc=att?Math.min(100,Math.round(S.corr/att*100)):0;
+  return `<div class="card"><h2 class="font-bold text-lg mb-2">📊 আমার অগ্রগতি</h2>
+  <div class="grid grid-cols-3 gap-2 text-center"><div class="p-2 rounded-xl bg-indigo-50"><div class="font-bold text-lg">${bn(att)}</div><div class="text-xs text-slate-600">মোট উত্তর</div></div><div class="p-2 rounded-xl bg-emerald-50"><div class="font-bold text-lg">${bn(S.corr)}</div><div class="text-xs text-slate-600">সঠিক</div></div><div class="p-2 rounded-xl bg-amber-50"><div class="font-bold text-lg">${bn(pc)}%</div><div class="text-xs text-slate-600">সঠিকতার হার</div></div></div>
+  <h3 class="font-bold mt-4 mb-2">⚠️ দুর্বল টপিক (আগে এগুলো পড়ুন)</h3>
+  ${PR.length?PR.map((x,i)=>`<div class="mb-3"><div class="flex justify-between text-sm"><span class="font-semibold">${esc(x.k)}</span><span>${bn(x.p)}% (${bn(x.n)}টি)</span></div><div class="h-2 bg-slate-200 rounded-full my-1"><div class="h-2 rounded-full ${x.p<50?'bg-rose-500':x.p<75?'bg-amber-400':'bg-emerald-500'}" style="width:${x.p}%"></div></div>${S.mist.some(m=>m.tp===x.k)?`<button class="text-sm text-indigo-700 font-semibold" onclick="revT(${i})">এই টপিকের ভুল রিভিশন →</button>`:''}</div>`).join(''):'<p class="text-sm text-slate-500">কুইজ দিলে এখানে টপিকভিত্তিক ফল দেখা যাবে।</p>'}
+  ${PR.length?'<button class="btn l w-full mt-2" onclick="advice()">🤖 এআই গুরুর পরামর্শ নিন</button><div id="adv"></div>':''}</div>`;
+}
+function revT(i){const x=PR[i];if(!x)return;const l=S.mist.filter(m=>m.tp===x.k);if(l.length)quiz('টপিক রিভিশন: '+x.k,l,true)}
+async function advice(){
+  const e=$('adv');if(!e||!PR.length)return;
+  e.innerHTML='<div class="text-sm text-indigo-700 font-semibold mt-2">⏳ এআই গুরু ভাবছেন...</div>';
+  try{
+    const t=await ask('টপিকভিত্তিক ফল (সঠিক/ভুল):\n'+PR.map(x=>x.k+' → '+S.topics[x.k].r+'/'+S.topics[x.k].w).join('\n')+'\nকোন টপিক আগে আর কীভাবে পড়বে, সহজ বাংলায় পরামর্শ দাও।','তুমি “এআই গুরু”, বন্ধুসুলভ শিক্ষক। শুধু দেওয়া ফলাফলের ভিত্তিতে সহজ বাংলায় সর্বোচ্চ ৫টি ছোট বাক্যে পড়ার পরিকল্পনা দাও। কোনো তথ্য বানিও না।');
+    if(!t)throw new Error('empty');
+    e.innerHTML=`<div class="mt-2 p-3 rounded-xl bg-indigo-50 text-indigo-900 text-sm whitespace-pre-line">🤖 ${esc(t)}</div>`;
+  }catch(x){e.innerHTML='<div class="text-sm text-rose-700 mt-2">❌ এআই গুরুকে পাওয়া যায়নি। ইন্টারনেট ও সার্ভার দেখে আবার চেষ্টা করুন।</div>'}
+}
+function vBadge(){vBadges();$('app').insertAdjacentHTML('afterbegin',progHtml())}
+
+/* ---------- PWA install ---------- */
+let DEF=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DEF=e;if(tab==='home')r()});
+function instBtn(){return DEF?'<button class="btn w-full mb-3" style="background:#0f766e" onclick="instApp()">📲 ফোনে অ্যাপের মতো ইনস্টল করুন</button>':''}
+async function instApp(){if(!DEF)return;DEF.prompt();try{await DEF.userChoice}catch(e){}DEF=null;if(tab==='home')r()}
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+
+/* ---------- Photo doubt solver ---------- */
+let DIMG=null;
+function showDImg(){
+  const e=$('dp');if(!e)return;
+  e.innerHTML=DIMG?`<div class="p-2 border-2 border-emerald-300 rounded-xl bg-emerald-50"><img src="${DIMG.url}" alt="ডাউটের ছবি" class="w-full max-h-56 object-contain rounded-lg bg-white"><button class="btn d w-full mt-2" onclick="DIMG=null;showDImg()">❌ ছবি সরান</button></div>`:
+  `<label for="df" class="block text-center cursor-pointer p-5 rounded-xl border-2 border-dashed border-violet-400 bg-violet-50 text-violet-800 font-bold" style="min-height:96px">📸 প্রশ্ন বা অঙ্কের ছবি তুলুন বা গ্যালারি থেকে দিন</label>`;
+}
+async function onDImg(inp){
+  const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+  if(!f.type.startsWith('image/'))return toast('শুধু ছবির ফাইল দিন');
+  try{DIMG=await compress(f);showDImg()}catch(e){toast('ছবিটি খোলা যায়নি')}
+}
+function vDoubt(){
+  $('app').innerHTML=`<div class="card"><h2 class="font-bold text-lg mb-2">📸 ছবি তুলে ডাউট সমাধান</h2>
+  <div id="dp" class="mb-3"></div><input id="df" type="file" accept="image/*" class="hidden" onchange="onDImg(this)">
+  <textarea id="dq" rows="3" class="inp" placeholder="কোন অংশটা বুঝতে পারছ না? (ঐচ্ছিক)"></textarea>
+  <button class="btn w-full mt-3" style="background:#7c3aed" onclick="solveDoubt()">🤖 বুঝিয়ে দিন</button><div id="da" class="mt-3"></div></div>`;
+  showDImg();
+}
+async function solveDoubt(){
+  if(busy)return;
+  const q=($('dq').value||'').trim(),A=$('da');
+  if(!DIMG&&q.length<5){A.innerHTML='<span class="text-rose-700 text-sm font-semibold">ছবি দিন অথবা প্রশ্ন লিখুন।</span>';return}
+  busy=true;A.innerHTML='<span class="text-indigo-700 text-sm font-semibold">⏳ এআই গুরু ভাবছেন...</span>';
+  const P=S.prof,lv=P?P.cls+' শ্রেণি, '+P.sub:'স্কুলের ছাত্র';
+  const sys='তুমি “এআই গুরু”, WBBSE ছাত্রছাত্রীদের বন্ধুসুলভ শিক্ষক। ছবিতে বা প্রশ্নে যা দেখা যাচ্ছে শুধু তা নিয়েই সহজ বাংলায় ধাপে ধাপে বুঝিয়ে দাও (ছাত্রের স্তর: '+lv+')। অঙ্ক হলে প্রতিটি ধাপ দেখাও। ছবি ঝাপসা বা অপঠনযোগ্য হলে স্পষ্ট বলো, আন্দাজে উত্তর বানিও না। বোল্ড, হেডিং বা বিশেষ চিহ্ন (*, #) ব্যবহার কোরো না।';
+  const parts=[{text:q||'ছবির প্রশ্নটি বুঝিয়ে সমাধান করো।'}];
+  if(DIMG)parts.push({inlineData:{mimeType:'image/jpeg',data:DIMG.b64}});
+  try{
+    const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}]});
+    if(!res.ok){let m='';try{m=((await res.json()).error||{}).message||''}catch(_){}
+      throw ge(/API key/i.test(m)||res.status===401||res.status===403?'key':(res.status===404||res.status===405)&&(!m||m==='POST only')?'noproxy':res.status===429?'quota':'http',res,m)}
+    const d=await res.json();
+    const t=((d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[]).map(x=>x.text||'').join('').trim();
+    if(!t)throw new Error('empty');
+    A.innerHTML=`<div class="p-3 rounded-xl bg-indigo-50 text-indigo-900 text-sm whitespace-pre-line">🤖 ${esc(t)}</div><div class="text-xs text-slate-500 mt-2">এআই ভুল করতে পারে, শিক্ষকের সঙ্গে মিলিয়ে নেবেন।</div>`;
+  }catch(e){
+    const E={key:'❌ API Key সঠিক নয় বা অনুমতি নেই।',quota:'❌ বিনামূল্যের সীমা শেষ। কিছুক্ষণ পরে আবার চেষ্টা করুন।',noproxy:'❌ সার্ভারের এআই চালু নেই। “এআই” ট্যাবে নিজের Gemini API Key দিন।',empty:'❌ এআই উত্তর দেয়নি। স্পষ্ট ছবি দিয়ে আবার চেষ্টা করুন।'};
+    A.innerHTML='<span class="text-rose-700 text-sm font-semibold">'+emsg(e,E)+'</span>';
+  }
+  busy=false;
+}
+
 function vAlya(){
   $('app').innerHTML=`<div class="flex gap-2 mb-2"><button class="btn d" onclick="nav('home')">← হোম</button><a class="btn l flex-1" href="${ALYA}" target="_blank" rel="noopener">নতুন ট্যাবে খুলুন ↗</a></div>
   <iframe src="${ALYA}" title="আলিয়া এআই" allow="microphone; camera; clipboard-write" class="w-full bg-white rounded-xl border" style="height:calc(100vh - 190px);min-height:420px"></iframe>
   <p class="text-xs text-slate-500 mt-2">এখানে কিছু না দেখালে “নতুন ট্যাবে খুলুন” চাপুন।</p>`;
 }
-function vBadge(){
+function vBadges(){
   $('app').innerHTML=`<div class="card text-center"><div class="text-4xl">🏆</div><div class="font-bold text-lg">${bn(S.badges.length)}/${bn(BD.length)}টি ব্যাজ অর্জিত</div><div class="text-sm text-slate-500">লেভেল ${bn(lvl())} – ${lvName()} • ${bn(S.xp)} XP</div></div>
   <div class="grid grid-cols-2 gap-3">${BD.map(b=>{const h=S.badges.includes(b[0]);return `<div class="card text-center ${h?'':'opacity-50 grayscale'}"><div class="text-4xl">${b[1]}</div><div class="font-bold">${b[2]}</div><div class="text-xs text-slate-500">${b[3]}</div></div>`}).join('')}</div>`;
 }
@@ -468,7 +578,7 @@ function showG(){
   const el=$('gr');if(!el||!G)return;const mcq=G.items[0].o;
   el.innerHTML=`${refCard()}<div class="card"><h3 class="font-bold mb-2">তৈরি প্রশ্ন (${bn(G.items.length)}টি)</h3>
   ${G.items.map((x,i)=>`<div class="mb-3 pb-3 border-b">${x.tp?`<div class="text-xs text-indigo-600">📌 ${esc(x.tp)}</div>`:''}<div class="font-semibold">${bn(i+1)}. ${esc(x.q)}</div>${x.o?x.o.map((o,j)=>`<div class="text-sm ${j===x.a?'text-emerald-700 font-bold':'text-slate-600'}">${L[j]||j+1}) ${esc(o)}</div>`).join(''):`<div class="text-sm text-emerald-700">উত্তর: ${esc(x.ans)}</div>`}</div>`).join('')}
-  <div class="grid gap-2">${mcq?`<button class="btn" onclick="quiz(G.t,G.items,false)">এই প্রশ্নে কুইজ দিন</button>`:''}<button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান / প্রিন্ট</button></div></div>`;
+  <div class="grid gap-2">${mcq?`<button class="btn" onclick="quiz(G.t,G.items,false)">এই প্রশ্নে কুইজ দিন</button>`:''}<button class="btn d" onclick="shareSet(G.t,G.items)">🔗 প্রশ্নসেট শেয়ার লিংক</button><button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান / প্রিন্ট</button></div></div>`;
 }
 
 /* ---------- Question paper ---------- */
@@ -480,7 +590,7 @@ function vPaper(){
   <input class="inp" value="${esc(F.sch)}" oninput="F.sch=this.value;pb()" placeholder="স্কুল / কোচিং-এর নাম">
   <div class="grid grid-cols-2 gap-2"><input class="inp" value="${esc(F.cls)}" oninput="F.cls=this.value;pb()" placeholder="শ্রেণি"><input class="inp" value="${esc(F.sub)}" oninput="F.sub=this.value;pb()" placeholder="বিষয়"><input class="inp" value="${esc(F.fm)}" oninput="F.fm=this.value;pb()" placeholder="পূর্ণমান"><input class="inp" value="${esc(F.tm)}" oninput="F.tm=this.value;pb()" placeholder="সময়"></div>
   <label class="flex items-center gap-2 font-semibold py-2"><input type="checkbox" class="w-5 h-5" ${F.ans?'checked':''} onchange="F.ans=this.checked;pb()"> উত্তরপত্র দেখান / লুকান</label>
-  <button class="btn g" onclick="window.print()">🖨️ PDF ডাউনলোড / প্রিন্ট</button><p class="text-xs text-slate-500">প্রিন্ট ডায়ালগে “PDF হিসেবে সংরক্ষণ করুন” বেছে নিন।</p></div></div><div id="paper"></div>`;
+  <button class="btn g" onclick="window.print()">🖨️ PDF ডাউনলোড / প্রিন্ট</button><button class="btn l" onclick="shareSet(CUR.t,CUR.items)">🔗 কুইজ লিংক শেয়ার</button><p class="text-xs text-slate-500">প্রিন্ট ডায়ালগে “PDF হিসেবে সংরক্ষণ করুন” বেছে নিন।</p></div></div><div id="paper"></div>`;
 }
 function pb(){
   const e=$('paper');if(!e||!CUR)return;const it=CUR.items;
@@ -493,6 +603,7 @@ function pb(){
 
 if(S.prof){F.sch=S.prof.sch||F.sch;F.cls=S.prof.cls+' শ্রেণি';F.sub=S.prof.sub}else tab='setup';
 r();
+{const hq=location.hash.match(/^#q=([A-Za-z0-9_-]+)/);if(hq)openShared(hq[1])}
 {const hc=location.hash.match(/^#call=([a-z0-9]+)/);if(hc){tab='call';r();joinCall(hc[1])}}
 </script>
 </body>
