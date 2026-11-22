@@ -104,6 +104,8 @@ function toast(m){const n=document.querySelectorAll('.tt').length,d=document.cre
   d.style.cssText='transform:translateX(-50%);top:'+(64+n*46)+'px';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
 function addXP(n){const o=lvl();S.xp+=n;if(lvl()>o)toast('🎉 লেভেল '+bn(lvl())+' – '+lvName()+'!')}
 function chk(){BD.forEach(b=>{if(!S.badges.includes(b[0])&&b[4]()){S.badges.push(b[0]);toast(b[1]+' নতুন ব্যাজ: '+b[2])}})}
+function ge(code,res,m){const e=new Error(code);e.det=res.status+(m?': '+String(m).slice(0,140):'');return e}
+function emsg(e,E){return (E[e.message]||(e.name==='SyntaxError'?E.empty:'❌ সংযোগ বা সার্ভারে সমস্যা হয়েছে। ইন্টারনেট দেখে আবার চেষ্টা করুন।'))+(e.det?' <span class="text-xs text-slate-500">[কোড '+esc(e.det)+']</span>':'')}
 function bar(){$('xp').textContent=bn(S.xp);$('st').textContent=bn(S.streak);$('lv').textContent='Lv '+bn(lvl())}
 function touch(){const t=dkey(new Date());if(S.last===t)return;
   S.streak=S.last===dkey(new Date(Date.now()-864e5))?S.streak+1:1;S.last=t}
@@ -235,30 +237,48 @@ function profCard(){
   <div class="grid gap-2 mt-3"><button class="btn" onclick="genCommon('mcq')">⚡ সম্ভাব্য কমন প্রশ্ন (MCQ)</button><button class="btn l" onclick="genCommon('sq')">⚡ সম্ভাব্য কমন ছোট প্রশ্ন</button></div>
   <div id="hm" class="text-sm mt-2">${PDFB?'📄 '+esc(PDFB.name)+' থেকে প্রশ্ন হবে':'<span class="text-slate-500">এআই-এর বানানো প্রশ্ন, শিক্ষককে দিয়ে মিলিয়ে নেবেন।</span>'}</div></div>`;
 }
+async function research(P){
+  const q=`Search the web and find: (1) the official textbook used by the ${P.state} school board for Class ${P.cls}, subject ${P.sub} (book name and publisher); (2) the key topics and important sub-topics of the lesson "${P.les||'the main chapters'}" in that textbook; (3) which topics and question types are asked most often in past board or school exams, according to question banks or past papers you can find. Answer in Bengali, plain text, under 300 words. Do not invent anything; if something cannot be found, say so.`;
+  const res=await callG({systemInstruction:{parts:[{text:'You are a careful academic researcher. Use web search and report only what you actually find.'}]},contents:[{parts:[{text:q}]}],tools:[{google_search:{}}],generationConfig:{temperature:0.2}});
+  if(!res.ok)throw new Error('rs');
+  const d=await res.json(),c=d.candidates&&d.candidates[0];
+  const sum=((c&&c.content&&c.content.parts)||[]).map(x=>x.text||'').join('').trim();
+  const src=(((c&&c.groundingMetadata&&c.groundingMetadata.groundingChunks)||[]).map(x=>x.web).filter(x=>x&&/^https?:/.test(x.uri||''))).slice(0,4);
+  return {sum,src};
+}
+function refCard(){
+  const r=G&&G.ref;if(!r)return '';
+  return `<div class="card bg-indigo-50"><div class="font-bold text-indigo-800 mb-1">🔎 ইন্টারনেট থেকে পাওয়া তথ্য</div><div class="text-sm whitespace-pre-line">${esc(r.sum)}</div>${r.src.length?`<div class="text-xs mt-2">সূত্র: ${r.src.map(x=>`<a class="underline text-indigo-700" target="_blank" rel="noopener" href="${esc(x.uri)}">${esc(x.title||'লিংক')}</a>`).join(' • ')}</div>`:''}<div class="text-xs text-slate-500 mt-2">এটি এআই-এর সংক্ষিপ্ত সারাংশ; পাঠ্যবইয়ের সঙ্গে মিলিয়ে নেবেন।</div></div>`;
+}
 async function genCommon(ty){
   if(busy)return;const P=S.prof;busy=true;
   const hm=t=>{const e=$('hm');if(e)e.innerHTML=t};
-  hm('<span class="text-indigo-700 font-semibold">⏳ সম্ভাব্য কমন প্রশ্ন তৈরি হচ্ছে, একটু অপেক্ষা করুন...</span>');
-  const sys='You are an experienced exam-paper setter for the school board of the given state (default: West Bengal Board, WBBSE). Create questions that are most likely to appear commonly in school and board exams for the given class, subject and lesson, based on the standard textbook syllabus and typical exam patterns. If a PDF is attached, create questions STRICTLY from the PDF content only. Use only well-established textbook facts; if you are unsure about a fact, skip it. Never claim a question comes from any specific school or past paper. Write in Bengali. Output ONLY valid JSON with no markdown fences.';
-  const fmt=ty==='mcq'?'{"questions":[{"q":"প্রশ্ন","o":["অ","আ","ই","ঈ"],"a":0,"e":"সংক্ষিপ্ত ব্যাখ্যা"}]} — exactly 4 options, "a" is the 0-based index of the correct option':'{"questions":[{"q":"প্রশ্ন","ans":"সংক্ষিপ্ত উত্তর"}]} — each answer is one short sentence worth 1 mark';
+  let ref=null;
+  if(!PDFB){
+    hm('<span class="text-indigo-700 font-semibold">🔎 বই আর পরীক্ষার ধরন ইন্টারনেটে খোঁজা হচ্ছে...</span>');
+    try{ref=await research(P);if(!ref.sum)ref=null}catch(e){ref=null}
+  }
+  hm('<span class="text-indigo-700 font-semibold">✍️ প্রশ্ন তৈরি হচ্ছে, একটু অপেক্ষা করুন...</span>');
+  const sys='You are an experienced exam-paper setter for the school board of the given state (default: West Bengal Board, WBBSE). Create questions that are most likely to appear commonly in school and board exams for the given class, subject and lesson, based on the standard textbook syllabus and typical exam patterns. Spread the questions across all key sub-topics of the lesson and put the most frequently examined topics first. If a PDF is attached, create questions STRICTLY from the PDF content only. Use only well-established textbook facts; if you are unsure about a fact, skip it. Never claim a question comes from any specific school or past paper. Write in Bengali. Output ONLY valid JSON with no markdown fences.';
+  const fmt=ty==='mcq'?'{"questions":[{"q":"প্রশ্ন","o":["অ","আ","ই","ঈ"],"a":0,"e":"সংক্ষিপ্ত ব্যাখ্যা","tp":"অধ্যায়ের কোন অংশ/টপিক"}]} — exactly 4 options, "a" is the 0-based index of the correct option':'{"questions":[{"q":"প্রশ্ন","ans":"সংক্ষিপ্ত উত্তর","tp":"অধ্যায়ের কোন অংশ/টপিক"}]} — each answer is one short sentence worth 1 mark';
   const ctx=`State: ${P.state}; Class: ${P.cls}; Subject: ${P.sub}; Lesson: ${P.les||'(not given – choose the most important topics of this subject and class)'}; District: ${P.dist||'-'}`;
-  const parts=[{text:`Create exactly 10 ${ty==='mcq'?'multiple-choice questions':'one-mark short-answer questions'} most likely to appear commonly in exams.\nContext: ${ctx}\nJSON format: ${fmt}${PDFB?'\nUse ONLY the attached PDF as the source.':''}`}];
+  const parts=[{text:`Create exactly 15 ${ty==='mcq'?'multiple-choice questions':'one-mark short-answer questions'} most likely to appear commonly in exams.\nContext: ${ctx}${ref?'\n\nREFERENCE (web research summary: book, key topics, frequently asked areas). Use it to choose the important topics and stay aligned with the textbook; do not repeat unverified claims:\n'+ref.sum:''}\nJSON format: ${fmt}${PDFB?'\nUse ONLY the attached PDF as the source.':''}`}];
   if(PDFB)parts.push({inlineData:{mimeType:'application/pdf',data:PDFB.b64}});
   try{
     const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json',temperature:0.3}});
     if(!res.ok){let m='';try{m=((await res.json()).error||{}).message||''}catch(_){}
-      throw new Error(/API key/i.test(m)||res.status===401||res.status===403?'key':res.status===404||res.status===405?'noproxy':res.status===429?'quota':'http')}
+      throw ge(/API key/i.test(m)||res.status===401||res.status===403?'key':(res.status===404||res.status===405)&&(!m||m==='POST only')?'noproxy':res.status===429?'quota':'http',res,m)}
     const d=await res.json();
     let a=JSON.parse((d.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('').replace(/```json|```/g,'').trim());
     if(a&&a.error)throw new Error('unreadable');
     a=Array.isArray(a)?a:a.questions;
-    const items=(a||[]).filter(x=>x&&x.q&&(ty==='mcq'?Array.isArray(x.o)&&x.o.length>=2&&Number.isInteger(x.a)&&x.o[x.a]!==undefined:x.ans)).slice(0,10);
+    const items=(a||[]).filter(x=>x&&x.q&&(ty==='mcq'?Array.isArray(x.o)&&x.o.length>=2&&Number.isInteger(x.a)&&x.o[x.a]!==undefined:x.ans)).slice(0,15);
     if(!items.length)throw new Error('empty');
-    G={t:'কমন প্রশ্ন: '+P.sub+(P.les?' – '+P.les:''),items};setCur(G.t,items,P.sub);busy=false;nav('gen');
+    G={t:'কমন প্রশ্ন: '+P.sub+(P.les?' – '+P.les:''),items,ref};setCur(G.t,items,P.sub);busy=false;nav('gen');
   }catch(e){
     busy=false;
     const E={key:'❌ API Key সঠিক নয় বা অনুমতি নেই।',quota:'❌ বিনামূল্যের সীমা শেষ। কিছুক্ষণ পরে আবার চেষ্টা করুন।',noproxy:'❌ সার্ভারের এআই চালু নেই। “এআই” ট্যাবে নিজের Gemini API Key দিন।',unreadable:'❌ PDF পড়া যায়নি। পরিষ্কার লেখাওয়ালা অন্য PDF দিন।',empty:'❌ এআই সঠিক ফরম্যাটে উত্তর দেয়নি। আবার চেষ্টা করুন।'};
-    hm('<span class="text-rose-700 font-semibold">'+(E[e.message]||(e.name==='SyntaxError'?E.empty:'❌ সংযোগ বা সার্ভারে সমস্যা হয়েছে। ইন্টারনেট দেখে আবার চেষ্টা করুন।'))+'</span>');
+    hm('<span class="text-rose-700 font-semibold">'+emsg(e,E)+'</span>');
   }
 }
 function vAlya(){
@@ -343,7 +363,7 @@ async function doGen(demo){
     try{
       const res=await callG({systemInstruction:{parts:[{text:sys}]},contents:[{parts}],generationConfig:{responseMimeType:'application/json',temperature:0.3}});
       if(!res.ok){let m='';try{m=((await res.json()).error||{}).message||''}catch(_){}
-        throw new Error(/API key/i.test(m)||res.status===401||res.status===403?'key':res.status===404||res.status===405?'noproxy':res.status===429?'quota':res.status===400&&IMG?'badimg':'http')}
+        throw ge(/API key/i.test(m)||res.status===401||res.status===403?'key':(res.status===404||res.status===405)&&(!m||m==='POST only')?'noproxy':res.status===429?'quota':res.status===400&&IMG?'badimg':'http',res,m)}
       const d=await res.json();
       let t=(d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').replace(/```json|```/g,'').trim();
       let a=JSON.parse(t);
@@ -355,7 +375,7 @@ async function doGen(demo){
     }catch(e){
       busy=false;
       const E={key:'❌ API Key সঠিক নয় বা অনুমতি নেই। কী পরীক্ষা করুন।',quota:'❌ বিনামূল্যের সীমা শেষ বা অনেক বেশি অনুরোধ হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।',unreadable:'❌ ছবিটি ঝাপসা বা পড়া যাচ্ছে না। ভালো আলোয়, সোজা করে, লেখা পরিষ্কার দেখা যায় এমন ছবি তুলে আবার দিন।',badimg:'❌ ছবিটি পাঠানো যায়নি। অন্য একটি ছবি দিয়ে চেষ্টা করুন।',empty:'❌ এআই সঠিক ফরম্যাটে উত্তর দেয়নি। আবার চেষ্টা করুন।',noproxy:'❌ এই সাইটে সার্ভারের এআই চালু নেই। নিচের ঘরে নিজের Gemini API Key দিন।'};
-      return gm(E[e.message]||(e.name==='SyntaxError'?E.empty:'❌ সংযোগ বা সার্ভারে সমস্যা হয়েছে। ইন্টারনেট দেখে আবার চেষ্টা করুন।'));
+      return gm(emsg(e,E));
     }
     busy=false;
   }
@@ -363,8 +383,8 @@ async function doGen(demo){
 }
 function showG(){
   const el=$('gr');if(!el||!G)return;const mcq=G.items[0].o;
-  el.innerHTML=`<div class="card"><h3 class="font-bold mb-2">তৈরি প্রশ্ন (${bn(G.items.length)}টি)</h3>
-  ${G.items.map((x,i)=>`<div class="mb-3 pb-3 border-b"><div class="font-semibold">${bn(i+1)}. ${esc(x.q)}</div>${x.o?x.o.map((o,j)=>`<div class="text-sm ${j===x.a?'text-emerald-700 font-bold':'text-slate-600'}">${L[j]||j+1}) ${esc(o)}</div>`).join(''):`<div class="text-sm text-emerald-700">উত্তর: ${esc(x.ans)}</div>`}</div>`).join('')}
+  el.innerHTML=`${refCard()}<div class="card"><h3 class="font-bold mb-2">তৈরি প্রশ্ন (${bn(G.items.length)}টি)</h3>
+  ${G.items.map((x,i)=>`<div class="mb-3 pb-3 border-b">${x.tp?`<div class="text-xs text-indigo-600">📌 ${esc(x.tp)}</div>`:''}<div class="font-semibold">${bn(i+1)}. ${esc(x.q)}</div>${x.o?x.o.map((o,j)=>`<div class="text-sm ${j===x.a?'text-emerald-700 font-bold':'text-slate-600'}">${L[j]||j+1}) ${esc(o)}</div>`).join(''):`<div class="text-sm text-emerald-700">উত্তর: ${esc(x.ans)}</div>`}</div>`).join('')}
   <div class="grid gap-2">${mcq?`<button class="btn" onclick="quiz(G.t,G.items,false)">এই প্রশ্নে কুইজ দিন</button>`:''}<button class="btn l" onclick="nav('paper')">প্রশ্নপত্র বানান / প্রিন্ট</button></div></div>`;
 }
 
