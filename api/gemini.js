@@ -1,6 +1,6 @@
 // Vercel Serverless Function: /api/gemini
 // Gemini API key stays on the server (Vercel Environment Variable: GEMINI_API_KEY).
-const MODEL = 'gemini-2.5-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash'; // can be changed from Vercel env var GEMINI_MODEL
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const hits = new Map(); // best-effort per-instance rate limit (10 requests / minute / IP)
 
@@ -31,10 +31,7 @@ module.exports = async (req, res) => {
     contents: b.contents,
     systemInstruction: b.systemInstruction,
     ...(Array.isArray(b.tools) && b.tools.length === 1 && b.tools[0] && b.tools[0].google_search ? { tools: [{ google_search: {} }] } : {}),
-    generationConfig: {
-      temperature: typeof gc.temperature === 'number' ? Math.min(Math.max(gc.temperature, 0), 1) : 0.4,
-      ...(gc.responseMimeType === 'application/json' ? { responseMimeType: 'application/json' } : {})
-    }
+    ...(gc.responseMimeType === 'application/json' ? { generationConfig: { responseMimeType: 'application/json' } } : {})
   };
   const payload = JSON.stringify(body);
   if (payload.length > 3000000) return res.status(413).json({ error: { message: 'Payload too large' } });
