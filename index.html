@@ -24,6 +24,61 @@ body{font-family:'Hind Siliguri',system-ui,sans-serif;background:#f1f5f9;color:#
 .nv.on{color:#4f46e5;font-weight:700}
 #paper{background:#fff;padding:1.5rem;border:1px solid #cbd5e1;border-radius:.5rem;line-height:1.75}
 @media print{body{background:#fff}.noprint{display:none!important}#paper{border:0;padding:0}main{padding:0!important;max-width:none!important}}
+
+/* ---- cinematic intro ---- */
+#intro{position:fixed;inset:0;z-index:100;overflow:hidden;background:#0b1026;color:#fff}
+#intro .sc{position:absolute;inset:0;opacity:0;transition:opacity .9s;overflow:hidden;perspective:900px}
+#intro .sc.on{opacity:1}
+#intro .cap{position:absolute;left:0;right:0;bottom:9%;text-align:center;font-weight:700;font-size:1.35rem;padding:0 1rem;text-shadow:0 2px 10px #000;z-index:6;animation:capin .9s both}
+@keyframes capin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#intro .skip{position:absolute;top:max(env(safe-area-inset-top),12px);right:12px;z-index:20;background:#ffffff2e;color:#fff;border:1px solid #ffffff66;border-radius:999px;padding:.55rem 1rem;font-weight:600;font-size:.9rem}
+.bg1{background:linear-gradient(#0b1026,#1e1b4b 60%,#312e81)}
+.bg2{background:linear-gradient(#0ea5e9,#bae6fd 60%)}
+.bg3{background:linear-gradient(#7c2d12,#ea580c 45%,#fdba74)}
+.bg4{background:radial-gradient(circle at 50% 35%,#1e293b,#020617 75%)}
+.bgs{background:radial-gradient(circle at 50% 30%,#4338ca,#0b1026 70%)}
+.ab{position:absolute;will-change:transform}
+.b1{position:absolute;will-change:transform;animation:fly var(--d) cubic-bezier(.2,.7,.3,1) var(--dl) both}
+@keyframes fly{0%{transform:translate3d(0,-65vh,-1700px);opacity:0}12%{opacity:1}100%{transform:translate3d(0,var(--ty),340px) rotate3d(1,1,1,var(--rt))}}
+.tw{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:tw 2s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.15}to{opacity:1}}
+@keyframes cl{from{transform:translateX(-30vw)}to{transform:translateX(130vw)}}
+.drop{position:absolute;top:-14vh;will-change:transform;animation:dr var(--d) cubic-bezier(.45,0,.9,.55) var(--dl) forwards}
+@keyframes dr{to{transform:translateY(var(--fy)) rotate(var(--rt))}}
+.bob{display:inline-block;animation:bob 1.8s ease-in-out calc(var(--dl) + var(--d)) infinite alternate}
+@keyframes bob{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-1.4vh) rotate(8deg)}}
+.bnc{display:inline-block;animation:bnc .5s ease-out calc(var(--dl) + var(--d)) 3}
+@keyframes bnc{0%,100%{transform:translateY(0)}50%{transform:translateY(-4vh)}}
+.sp{position:absolute;font-size:2rem;opacity:0;animation:sp .9s ease-out calc(var(--dl) + var(--d)) both}
+@keyframes sp{0%{opacity:1;transform:translateY(0) scale(.5)}100%{opacity:0;transform:translateY(-9vh) scale(1.8)}}
+.wv{position:absolute;left:0;width:200%;animation:wv var(--w) linear infinite}
+@keyframes wv{to{transform:translateX(-50%)}}
+.dn{position:absolute;bottom:25vh;left:0;font-size:17vw;line-height:1;animation:wk var(--w) linear var(--dl) infinite}
+@keyframes wk{from{transform:translateX(-30vw)}to{transform:translateX(125vw)}}
+.lv{position:absolute;font-size:2rem;animation:lvf 1.6s ease-out infinite}
+@keyframes lvf{0%{transform:translate(0,0) scale(.6);opacity:1}100%{transform:translate(var(--dx),-34vh) scale(1.5);opacity:0}}
+.sciw{position:relative;width:min(50vw,32vh);margin-left:6vw;animation:sin 1.3s ease-out both}
+@keyframes sin{from{transform:translateX(-90vw)}to{transform:none}}
+.sci{width:100%;height:auto;overflow:visible;display:block}
+.sci #arm{transform-origin:138px 190px;transition:transform 1s ease-in-out}
+.sciw.reach #arm{transform:rotate(-82deg)}
+.bigb{position:absolute;left:122%;top:46%;font-size:min(22vw,14vh);line-height:1;filter:drop-shadow(0 0 18px #fde047);animation:fl2 2s ease-in-out infinite alternate;cursor:pointer;background:none;border:0;color:inherit;padding:0}
+@keyframes fl2{from{transform:translate(-50%,-56%) scale(1)}to{transform:translate(-50%,-44%) scale(1.08)}}
+.chalk{position:absolute;top:8vh;left:0;right:0;text-align:center;font-size:min(16vw,12vh);font-weight:700;letter-spacing:.06em;color:#fef9c3;text-shadow:0 0 14px #fde047;animation:glow 2s ease-in-out infinite alternate}
+@keyframes glow{from{opacity:.7}to{opacity:1}}
+.bs{position:absolute;font-size:2.2rem;animation:bs 1.4s ease-out forwards}
+@keyframes bs{from{transform:translate(0,0) scale(.4) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.6) rotate(var(--rt));opacity:0}}
+.fl{position:absolute;inset:0;background:#fff;opacity:0;animation:fls .9s ease-out forwards;z-index:15}
+@keyframes fls{0%{opacity:0}25%{opacity:.95}100%{opacity:0}}
+.row{display:flex;gap:22px;overflow-x:auto;padding:24px 28px 40px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.bkc{flex:none;width:150px;height:215px;perspective:800px;scroll-snap-align:center;background:none;border:0;padding:0;animation:flt 3s ease-in-out infinite alternate;animation-delay:var(--dl)}
+@keyframes flt{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.bkc .in{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateY(-24deg);transition:transform .5s}
+.bkc:active .in{transform:rotateY(-6deg) scale(1.04)}
+.bkc .pg{position:absolute;inset:4px 2px 4px 8px;background:repeating-linear-gradient(#fff 0 18px,#e2e8f0 18px 19px);border-radius:3px 8px 8px 3px;color:#0f172a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;padding:8px;text-align:center}
+.bkc .cv{position:absolute;inset:0;border-radius:4px 10px 10px 4px;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:inset 10px 0 0 rgba(0,0,0,.28),6px 8px 16px rgba(0,0,0,.55);transform-origin:left center;transition:transform .7s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff;backface-visibility:hidden}
+.bkc.open .cv{transform:rotateY(-155deg)}
+.bkc .ic{font-size:3rem}.bkc .tl{font-weight:700;font-size:1.15rem}.bkc .sb{font-size:.75rem;opacity:.85}
 </style>
 </head>
 <body class="pb-24">
@@ -133,6 +188,7 @@ function vHome(){
   <button class="btn g w-full mb-3" onclick="nav('alya')">🤖 আলিয়া এআই-এর সঙ্গে কথা বলুন</button>
   <button class="btn w-full mb-3" style="background:#0ea5e9" onclick="nav('call')">📹 ভিডিও কল করুন</button>
   <button class="btn w-full mb-3" style="background:#7c3aed" onclick="nav('doubt')">📸 ছবি তুলে ডাউট সমাধান</button>
+  <button class="btn w-full mb-3" style="background:#4338ca" onclick="startIntro(false)">🎬 বইয়ের টাইম-ট্রাভেল ও তাক দেখুন</button>
   <div class="card"><div class="flex justify-between font-bold"><span>👑 লেভেল ${bn(lvl())} – ${lvName()}</span><span class="text-sm text-slate-500">${bn(S.xp%100)}/১০০ XP</span></div><div class="h-3 bg-slate-200 rounded-full mt-2"><div class="h-3 bg-amber-400 rounded-full" style="width:${S.xp%100}%"></div></div><div class="text-xs text-slate-500 mt-2">❤️ প্রতি কুইজে ৩টি জীবন • টানা সঠিক উত্তরে কম্বো বোনাস XP • 🤖 এআই গুরু ভুল বুঝিয়ে দেবেন</div></div>
   <h2 class="font-bold mb-2 text-slate-700">অধ্যায়ভিত্তিক কুইজ (প্রতি প্রশ্নে ৩০ সেকেন্ড)</h2>
   ${CH.map((c,i)=>`<div class="card"><div class="flex items-center gap-3"><div class="p-3 rounded-xl bg-indigo-100 text-indigo-700"><i data-lucide="${c.ic}" class="w-7 h-7"></i></div><div><div class="text-xs text-emerald-700 font-semibold">${c.sub} • ${c.cls}</div><div class="font-bold text-lg">${c.t}</div><div class="text-sm text-slate-500">${bn(c.qs.length)}টি MCQ</div></div></div>
@@ -474,6 +530,104 @@ async function solveDoubt(){
   busy=false;
 }
 
+/* ---------- Cinematic intro: sky -> ocean -> dinosaurs -> scientist -> bookshelf ---------- */
+const BOOKS=[
+{n:'ইতিহাস',ic:'🏛️',sb:'ফরাসি বিপ্লব',c1:'#ef4444',c2:'#7f1d1d',ch:0},
+{n:'জীবন বিজ্ঞান',ic:'🔬',sb:'কোষ ও কলা',c1:'#22c55e',c2:'#14532d',ch:1},
+{n:'ভৌতবিজ্ঞান',ic:'⚛️',sb:'এআই প্রশ্ন',c1:'#a855f7',c2:'#581c87',ch:-1},
+{n:'গণিত',ic:'➗',sb:'এআই প্রশ্ন',c1:'#3b82f6',c2:'#1e3a8a',ch:-1},
+{n:'বাংলা',ic:'📖',sb:'এআই প্রশ্ন',c1:'#f97316',c2:'#9a3412',ch:-1},
+{n:'ইংরেজি',ic:'🔤',sb:'এআই প্রশ্ন',c1:'#14b8a6',c2:'#134e4a',ch:-1},
+{n:'ভূগোল',ic:'🌏',sb:'এআই প্রশ্ন',c1:'#d97706',c2:'#78350f',ch:-1},
+{n:'কম্পিউটার',ic:'💻',sb:'এআই প্রশ্ন',c1:'#64748b',c2:'#1e293b',ch:-1},
+{n:'সাধারণ জ্ঞান',ic:'💡',sb:'এআই প্রশ্ন',c1:'#ec4899',c2:'#9f1239',ch:-1}];
+const EB=['📚','📖','📕','📗','📘','📙'];
+const SCI=`<svg class="sci" viewBox="0 0 200 320" aria-hidden="true">
+<path d="M50 320 L60 190 Q100 165 140 190 L150 320Z" fill="#374151"/><path d="M88 185 L100 215 L112 185Z" fill="#f3f4f6"/>
+<rect x="90" y="150" width="20" height="32" fill="#e8b98f"/>
+<g fill="#f8fafc"><circle cx="62" cy="72" r="26"/><circle cx="138" cy="72" r="26"/><circle cx="78" cy="42" r="28"/><circle cx="122" cy="42" r="28"/><circle cx="100" cy="30" r="26"/><circle cx="54" cy="104" r="18"/><circle cx="146" cy="104" r="18"/></g>
+<ellipse cx="100" cy="96" rx="42" ry="52" fill="#f1c9a5"/>
+<circle cx="84" cy="90" r="3.5" fill="#1f2937"/><circle cx="116" cy="90" r="3.5" fill="#1f2937"/>
+<path d="M74 80 Q84 74 94 80M106 80 Q116 74 126 80" stroke="#cbd5e1" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M72 118 Q86 108 100 116 Q114 108 128 118 Q114 129 100 123 Q86 129 72 118Z" fill="#9ca3af"/>
+<path d="M90 134 Q100 140 110 134" stroke="#92400e" stroke-width="3" fill="none" stroke-linecap="round"/>
+<g id="arm"><rect x="132" y="186" width="22" height="78" rx="11" fill="#374151"/><circle cx="143" cy="270" r="13" fill="#f1c9a5"/></g></svg>`;
+let IN=null,IT=[],IB=false;
+const itm=(f,ms)=>{IT.push(setTimeout(f,ms))};
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+function closeIntro(){IT.forEach(clearTimeout);IT=[];if(IN){IN.remove();IN=null}IB=false}
+function scene(html,cls){
+  vib(25);
+  const d=document.createElement('div');d.className='sc '+(cls||'');d.innerHTML=html;IN.appendChild(d);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
+  IN.querySelectorAll('.sc').forEach(o=>{if(o!==d){o.classList.remove('on');setTimeout(()=>o.remove(),950)}});
+  return d;
+}
+function startIntro(shelf){
+  closeIntro();st.set('wb_intro','1');
+  IN=document.createElement('div');IN.id='intro';IN.className='noprint';
+  IN.innerHTML='<button class="skip" onclick="introShelf()">স্কিপ ⏭</button>';
+  document.body.appendChild(IN);
+  if(shelf||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))return introShelf();
+  s1();itm(s2,5600);itm(s3,10800);itm(s4,16000);
+}
+function stars(n){let h='';for(let i=0;i<n;i++)h+=`<i class="tw" style="left:${rnd(0,100).toFixed(1)}%;top:${rnd(0,70).toFixed(1)}%;animation-delay:${rnd(0,2).toFixed(2)}s"></i>`;return h}
+function s1(){
+  let h=stars(46)+'<div class="ab" style="right:10%;top:6%;font-size:3.2rem">🌙</div>';
+  for(let i=0;i<16;i++)h+=`<div class="b1" style="left:${rnd(4,86).toFixed(1)}%;top:${rnd(8,38).toFixed(1)}%;font-size:${rnd(2.2,4.2).toFixed(1)}rem;--d:${rnd(3,4.6).toFixed(2)}s;--dl:${rnd(0,1.4).toFixed(2)}s;--ty:${rnd(-5,38).toFixed(0)}vh;--rt:${rnd(-540,540).toFixed(0)}deg">${EB[i%6]}</div>`;
+  scene(h+'<div class="cap">✨ আকাশ থেকে বইগুলো নেমে আসছে…</div>','bg1');
+}
+function wave(top,col,w){return `<svg class="wv" style="top:${top}vh;--w:${w};height:9vh" viewBox="0 0 400 100" preserveAspectRatio="none"><path d="M0 40 Q50 0 100 40 T200 40 T300 40 T400 40 V100 H0Z" fill="${col}"/></svg>`}
+function s2(){
+  let h='<div class="ab" style="right:12%;top:8%;font-size:4rem">☀️</div><div class="ab" style="left:0;top:14vh;font-size:5rem;opacity:.7;animation:cl 16s linear infinite">☁️</div><div class="ab" style="left:0;right:0;top:57vh;bottom:0;background:linear-gradient(#0284c7,#0c4a6e)"></div>'+wave(52,'#38bdf8aa','7s')+wave(55,'#0ea5e9cc','5s');
+  for(let i=0;i<12;i++){const l=rnd(4,88).toFixed(1),d=rnd(1.1,1.7).toFixed(2),dl=rnd(.2,3).toFixed(2);
+    h+=`<div class="drop" style="left:${l}%;font-size:${rnd(2.2,3.6).toFixed(1)}rem;--d:${d}s;--dl:${dl}s;--fy:${(71+rnd(-1,9)).toFixed(0)}vh;--rt:${rnd(-120,120).toFixed(0)}deg"><span class="bob">${EB[i%6]}</span></div><div class="sp" style="left:${l}%;top:52vh;--d:${d}s;--dl:${dl}s">💦</div>`}
+  scene(h+'<div class="cap">🌊 বইগুলো সমুদ্রে পড়ল!</div>','bg2');
+}
+function s3(){
+  let lava='';for(let i=0;i<7;i++)lava+=`<div class="lv" style="left:${rnd(35,60).toFixed(0)}%;bottom:84%;--dx:${rnd(-14,14).toFixed(0)}vw;animation-delay:${rnd(0,1.6).toFixed(2)}s">🔥</div>`;
+  let h='<div class="ab" style="left:50%;top:12vh;width:46vw;height:46vw;margin-left:-23vw;border-radius:50%;background:radial-gradient(#fde68a,#fb923c 60%,transparent 70%);opacity:.9"></div><div class="ab" style="left:0;right:0;bottom:0;height:30vh;background:linear-gradient(#5b3a1e,#2b170b)"></div>'
+   +`<div class="ab" style="right:2%;bottom:24vh;width:26vw"><div style="font-size:26vw;line-height:1">🌋</div>${lava}</div>`
+   +'<div class="dn" style="--w:11s;--dl:0s">🦖</div><div class="dn" style="--w:15s;--dl:-6s;font-size:20vw;bottom:21vh">🦕</div>';
+  for(let i=0;i<12;i++)h+=`<div class="drop" style="left:${rnd(4,88).toFixed(1)}%;font-size:${rnd(2.2,3.4).toFixed(1)}rem;--d:${rnd(1.1,1.6).toFixed(2)}s;--dl:${rnd(.2,3).toFixed(2)}s;--fy:${(86+rnd(-2,6)).toFixed(0)}vh;--rt:${rnd(-90,90).toFixed(0)}deg"><span class="bnc">${EB[i%6]}</span></div>`;
+  scene(h+'<div class="cap">🦖 এবার ডাইনোসরের যুগে…</div>','bg3');
+}
+function s4(){
+  IB=false;
+  const h='<div class="chalk">E = mc²</div>'+stars(30)+`<div class="ab" style="inset:0;display:flex;align-items:flex-end;padding-bottom:6vh"><div class="sciw" id="sw">${SCI}<button class="bigb" id="bb" onclick="burst()" aria-label="বই">📘</button></div></div><div class="cap" style="top:30vh;bottom:auto;font-size:1.1rem">🧠 মহান বিজ্ঞানী আইনস্টাইনের সামনে… বইটি ছুঁয়ে দেখো 👆</div>`;
+  scene(h,'bg4');
+  itm(()=>{const w=$('sw');if(w)w.classList.add('reach')},3200);
+  itm(burst,4600);
+}
+function burst(){
+  if(IB||!IN)return;IB=true;vib([40,40,40,40,120]);
+  const w=$('sw'),b=$('bb');if(w)w.classList.add('reach');
+  const r=b?b.getBoundingClientRect():{left:innerWidth/2,top:innerHeight/2,width:0,height:0};
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let h='<div class="fl"></div>';
+  for(let i=0;i<30;i++)h+=`<div class="bs" style="left:${cx}px;top:${cy}px;--dx:${rnd(-48,48).toFixed(0)}vw;--dy:${rnd(-46,46).toFixed(0)}vh;--rt:${rnd(-400,400).toFixed(0)}deg;animation-delay:${rnd(0,.25).toFixed(2)}s">${EB[i%6]}</div>`;
+  IN.insertAdjacentHTML('beforeend',h);
+  if(b)b.style.visibility='hidden';
+  itm(introShelf,1500);
+}
+function introShelf(){
+  if(!IN)return;IT.forEach(clearTimeout);IT=[];
+  const sk=IN.querySelector('.skip');if(sk)sk.remove();
+  let h='<div style="text-align:center;padding-top:max(env(safe-area-inset-top),22px)"><div style="font-size:1.6rem;font-weight:700">📚 তোমার বইয়ের তাক</div><div style="font-size:.9rem;opacity:.8;margin-top:4px">একটা বই বেছে নাও, ছুঁলেই খুলবে</div></div><div class="row" style="margin-top:6vh">';
+  BOOKS.forEach((b,i)=>{h+=`<button class="bkc" id="bk${i}" style="--c1:${b.c1};--c2:${b.c2};--dl:${(i*.25).toFixed(2)}s" onclick="pickBook(${i})"><div class="in"><div class="pg">${b.n}<br>শুরু করা যাক!</div><div class="cv"><div class="ic">${b.ic}</div><div class="tl">${b.n}</div><div class="sb">${b.sb}</div></div></div></button>`});
+  scene(h+'</div><div style="text-align:center;margin-top:3vh"><button class="btn d" onclick="closeIntro()">হোমে যান</button></div>','bgs');
+}
+function pickBook(i){
+  const b=BOOKS[i],el=$('bk'+i);if(el)el.classList.add('open');
+  setTimeout(()=>{
+    closeIntro();
+    if(b.ch>=0)return goQuiz(b.ch);
+    if(S.prof){S.prof.sub=b.n;S.prof.les='';save();toast('বিষয় “'+b.n+'” বেছে নেওয়া হলো। এবার ⚡ কমন প্রশ্ন চাপুন');nav('home')}
+    else{W={i:0,d:{sub:b.n}};nav('setup')}
+  },800);
+}
+
 function vAlya(){
   $('app').innerHTML=`<div class="flex gap-2 mb-2"><button class="btn d" onclick="nav('home')">← হোম</button><a class="btn l flex-1" href="${ALYA}" target="_blank" rel="noopener">নতুন ট্যাবে খুলুন ↗</a></div>
   <iframe src="${ALYA}" title="আলিয়া এআই" allow="microphone; camera; clipboard-write" class="w-full bg-white rounded-xl border" style="height:calc(100vh - 190px);min-height:420px"></iframe>
@@ -605,6 +759,7 @@ if(S.prof){F.sch=S.prof.sch||F.sch;F.cls=S.prof.cls+' শ্রেণি';F.sub=
 r();
 {const hq=location.hash.match(/^#q=([A-Za-z0-9_-]+)/);if(hq)openShared(hq[1])}
 {const hc=location.hash.match(/^#call=([a-z0-9]+)/);if(hc){tab='call';r();joinCall(hc[1])}}
+if(!st.get('wb_intro')&&!location.hash)startIntro(false);
 </script>
 </body>
 </html>
